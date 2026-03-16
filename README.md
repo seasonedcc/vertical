@@ -56,6 +56,7 @@ itsvertical open <file>                         # Open in the browser UI
 itsvertical show <file>                         # Print the board to the terminal
 itsvertical show <file> --json                  # Output the board as JSON
 itsvertical show <file> --box <slice-id>        # Show only a specific box
+itsvertical show <file> --visual               # Show the board as a visual 3x3 grid with summary
 itsvertical rename <file> <name>                # Rename the project
 ```
 

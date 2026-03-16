@@ -52,6 +52,7 @@ itsvertical new <path> <name>                    # Create a new .vertical file
 itsvertical show <file>                          # Print board with IDs
 itsvertical show <file> --json                   # Output board as JSON
 itsvertical show <file> --box <slice-id>         # Show only one box
+itsvertical show <file> --visual                  # Show visual 3x3 grid with summary table
 itsvertical rename <file> <name>                 # Rename the project
 itsvertical open <file>                          # Open in browser UI
 ```
@@ -125,6 +126,14 @@ itsvertical show project.vertical --json
 ```
 
 The JSON output contains the full board: project, slices (sorted by boxNumber), layers, and tasks with all IDs.
+
+### View the board as a grid
+
+```bash
+itsvertical show project.vertical --visual
+```
+
+The grid shows all 9 boxes with their tasks, layer structure, and a summary table — useful for a quick overview without opening the browser UI.
 
 ### Move a task between boxes
 
