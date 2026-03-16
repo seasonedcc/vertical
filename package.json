@@ -21,6 +21,7 @@
     "build": "vite build && tsup",
     "build:cli": "tsup",
     "itsvertical": "node cli/dist/index.js",
+    "roadmap": "pnpm run build && node cli/dist/index.js open roadmap.vertical",
     "lint": "biome check --error-on-warnings",
     "lint-fix": "biome check --write --error-on-warnings",
     "tsc": "tsc"

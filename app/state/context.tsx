@@ -2,9 +2,11 @@ import {
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useReducer,
-  useRef,
+  useState,
 } from 'react'
+import { serialize } from '~/file/format'
 import type { BoardAction } from './actions'
 import { boardReducer } from './reducer'
 import type { BoardState } from './types'
@@ -26,19 +28,22 @@ function BoardProvider({
   children: React.ReactNode
 }) {
   const [state, rawDispatch] = useReducer(boardReducer, initialState)
-  const dirtyRef = useRef(false)
+  const [savedSnapshot, setSavedSnapshot] = useState(() =>
+    serialize(initialState)
+  )
 
   const dispatch = useCallback((action: BoardAction) => {
     rawDispatch(action)
-    if (action.type !== 'LOAD_STATE') {
-      dirtyRef.current = true
-    }
   }, [])
 
-  const isDirty = useCallback(() => dirtyRef.current, [])
+  const currentSnapshot = useMemo(() => serialize(state), [state])
+  const isDirty = useCallback(
+    () => currentSnapshot !== savedSnapshot,
+    [currentSnapshot, savedSnapshot]
+  )
   const markClean = useCallback(() => {
-    dirtyRef.current = false
-  }, [])
+    setSavedSnapshot(currentSnapshot)
+  }, [currentSnapshot])
 
   return (
     <BoardContext.Provider value={{ state, dispatch, isDirty, markClean }}>
