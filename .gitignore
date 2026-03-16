@@ -1,0 +1,11 @@
+node_modules
+dist
+cli/dist
+.DS_Store
+*.pem
+*.tgz
+.env.local
+.env.*.local
+npm-debug.log*
+.pnpm-debug.log*
+.claude

@@ -1,0 +1,90 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+@import "tailwindcss";
+@plugin "daisyui";
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  --color-accent: #22d3ee;
+  --color-accent-content: #161b22;
+  --color-neutral: #374151;
+  --radius-btn: 0.25rem;
+  --radius-box: 0.375rem;
+  --depth: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+  prefersdark: true;
+  --color-accent: #22d3ee;
+  --color-accent-content: #161b22;
+  --color-neutral: #374151;
+  --radius-btn: 0.25rem;
+  --radius-box: 0.375rem;
+  --depth: 0;
+}
+
+@theme {
+  --font-sans: "Inter", serif;
+  --dark-bg: #161b22;
+
+  --animate-fade-in: fade-in 200ms ease-in;
+  --animate-fade-out: fade-out 200ms ease-in;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@utility h1 {
+  @apply text-base-content text-xl font-semibold;
+}
+
+@utility h2 {
+  @apply text-base-content text-xl;
+}
+
+@utility h3 {
+  @apply text-base-content text-lg;
+}
+
+@utility h4 {
+  @apply text-base-content text-base;
+}
+
+@utility no-scrollbar {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@utility split-mode-cursor {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="24" x="4" font-size="24">✂</text></svg>')
+    16 16, crosshair;
+  * {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="24" x="4" font-size="24">✂</text></svg>')
+      16 16, crosshair !important;
+  }
+}
+
+@layer base {
+  button {
+    @apply cursor-pointer;
+  }
+}
