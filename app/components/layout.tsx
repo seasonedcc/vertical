@@ -161,6 +161,14 @@ function Layout({
   }, [dirty])
 
   useEffect(() => {
+    if (!dirty) return
+    const timer = setTimeout(() => {
+      saveProject(state).then(markClean)
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [dirty, state])
+
+  useEffect(() => {
     return subscribeToFileChanges(async () => {
       if (dirtyRef.current) return
       const newState = await fetchProject()
