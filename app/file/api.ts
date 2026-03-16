@@ -21,4 +21,12 @@ async function saveProject(state: BoardState): Promise<void> {
   }
 }
 
-export { fetchProject, saveProject }
+function reportDirty(dirty: boolean): void {
+  fetch('/api/dirty', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dirty }),
+  })
+}
+
+export { fetchProject, reportDirty, saveProject }

@@ -148,7 +148,7 @@
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Warn before closing the `open` CLI command if there are pending changes in the local web state, giving the user the chance to save it before ending the server",
       "sorting": 3,
-      "done": false
+      "done": true
     },
     {
       "id": "2a59de9f-0f27-4a99-b2bb-ac26c1a00c00",
@@ -164,7 +164,7 @@
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Add favicon to the web experience",
       "sorting": 2.5,
-      "done": false
+      "done": true
     },
     {
       "id": "e525841f-de65-48dc-9ade-288602bd3020",

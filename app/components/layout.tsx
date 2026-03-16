@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { saveProject } from '~/file/api'
+import { reportDirty, saveProject } from '~/file/api'
 import logo from '~/images/logo.png'
 import { cx, usePlaceCursorOnClickedPosition } from '~/lib/utils'
 import {
@@ -146,16 +146,22 @@ function Layout({
     return () => window.removeEventListener('keydown', handleKeydown)
   }, [state])
 
+  const dirty = isDirty()
+
+  useEffect(() => {
+    reportDirty(dirty)
+  }, [dirty])
+
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (isDirty()) {
+      if (dirty) {
         event.preventDefault()
       }
     }
 
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [isDirty])
+  }, [dirty])
 
   return (
     <div
@@ -173,7 +179,7 @@ function Layout({
           <img src={logo} alt="Vertical" className="max-w-8" />
         </div>
         <EditableProjectName name={state.project.name} />
-        {isDirty() && <span className="text-accent text-xs">●</span>}
+        {dirty && <span className="text-accent text-xs">●</span>}
         <ul className="menu menu-horizontal ml-auto shrink-0 flex-nowrap gap-1 px-1">
           <li>
             <button className="btn btn-neutral btn-sm" onClick={handleSave}>

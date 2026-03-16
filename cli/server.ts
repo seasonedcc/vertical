@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import http from 'node:http'
 import path from 'node:path'
+import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
 import getPort from 'get-port'
 import open from 'open'
@@ -58,9 +59,24 @@ function readRequestBody(req: http.IncomingMessage): Promise<string> {
   })
 }
 
+function confirm(question: string): Promise<boolean> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+  rl.on('error', () => {})
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      rl.close()
+      resolve(answer.toLowerCase() === 'y')
+    })
+  })
+}
+
 async function startServer(filePath: string) {
   const absoluteFilePath = path.resolve(filePath)
   const distPath = getDistPath()
+  let browserDirty = false
 
   if (!fs.existsSync(distPath)) {
     console.error(
@@ -87,6 +103,14 @@ async function startServer(filePath: string) {
       return
     }
 
+    if (url === '/api/dirty' && req.method === 'POST') {
+      const body = await readRequestBody(req)
+      browserDirty = JSON.parse(body).dirty
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end('{"ok":true}')
+      return
+    }
+
     if (serveStaticFile(res, distPath, url)) return
 
     const indexPath = path.join(distPath, 'index.html')
@@ -108,6 +132,24 @@ async function startServer(filePath: string) {
     console.log(`  Editing: ${absoluteFilePath}`)
     console.log('  Press Ctrl+C to stop\n')
     open(url)
+  })
+
+  process.on('SIGINT', async () => {
+    if (browserDirty) {
+      try {
+        const shouldQuit = await confirm(
+          '\n  There are unsaved changes in the browser. Quit anyway? (y/N) '
+        )
+        if (!shouldQuit) {
+          console.log('  Resuming...\n')
+          return
+        }
+      } catch {
+        // stdin error (e.g. second Ctrl+C), force quit
+      }
+    }
+    server.close()
+    process.exit(0)
   })
 }
 
