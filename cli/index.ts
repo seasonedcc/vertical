@@ -12,6 +12,7 @@ import {
   output,
   resolveFilePath,
 } from './apply.js'
+import { showBoardGrid, showSummaryTable } from './board.js'
 import { startServer } from './server.js'
 import { showBoard, showBoardJson } from './show.js'
 
@@ -79,23 +80,32 @@ program
   .argument('<file>', 'Path to the .vertical file')
   .option('--json', 'Output as JSON')
   .option('--box <slice-id>', 'Show only a specific box')
-  .action((file: string, options: JsonOption & { box?: string }) => {
-    const filePath = resolveFilePath(file, options.json)
-    const state = loadState(filePath)
+  .option('--visual', 'Show the board as a visual 3x3 grid with summary')
+  .action(
+    (
+      file: string,
+      options: JsonOption & { box?: string; visual?: boolean }
+    ) => {
+      const filePath = resolveFilePath(file, options.json)
+      const state = loadState(filePath)
 
-    if (options.box) {
-      const slice = state.slices.find((s) => s.id === options.box)
-      if (!slice) {
-        fail(`Box not found: ${options.box}`, options.json)
+      if (options.box) {
+        const slice = state.slices.find((s) => s.id === options.box)
+        if (!slice) {
+          fail(`Box not found: ${options.box}`, options.json)
+        }
+      }
+
+      if (options.json) {
+        showBoardJson(state)
+      } else if (options.visual) {
+        showBoardGrid(state, options.box)
+        showSummaryTable(state, options.box)
+      } else {
+        showBoard(state, options.box)
       }
     }
-
-    if (options.json) {
-      showBoardJson(state)
-    } else {
-      showBoard(state, options.box)
-    }
-  })
+  )
 
 program
   .command('rename')
