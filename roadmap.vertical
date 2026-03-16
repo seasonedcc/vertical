@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "project": {
+    "id": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+    "name": "Vertical Roadmap"
+  },
+  "slices": [
+    {
+      "id": "de444084-dfab-4fcf-8196-7a910b91ae86",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "boxNumber": 1,
+      "name": "UI improvements"
+    },
+    {
+      "id": "7c7ecca3-156b-406a-ae00-037a0640cc17",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "boxNumber": 2,
+      "name": null
+    },
+    {
+      "id": "08bbc77a-4353-4f51-9774-356dc0bbc48c",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "boxNumber": 3,
+      "name": null
+    },
+    {
+      "id": "f43e0caf-3842-42be-ad91-89b010b3f013",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "boxNumber": 4,
+      "name": null
+    },
+    {
+      "id": "877ac4ac-c574-49a7-9906-6e23a7c2b223",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "boxNumber": 5,
+      "name": null
+    },
+    {
+      "id": "2626fd13-a064-4b1b-b2fb-36944954e1e5",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "boxNumber": 6,
+      "name": null
+    },
+    {
+      "id": "9d6c6867-e814-4b0c-aa71-553c5ebd585c",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "boxNumber": 7,
+      "name": null
+    },
+    {
+      "id": "81c5f283-628f-4877-a840-de0b79ee4a20",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "boxNumber": 8,
+      "name": null
+    },
+    {
+      "id": "ab925f1d-7732-4c2b-8484-2435aa9b38f3",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "boxNumber": 9,
+      "name": null
+    }
+  ],
+  "layers": [
+    {
+      "id": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
+      "sliceId": "de444084-dfab-4fcf-8196-7a910b91ae86",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "7784ba10-0d2b-4cbc-81fe-4d2982620f5f",
+      "sliceId": "7c7ecca3-156b-406a-ae00-037a0640cc17",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "21f96540-b894-4e5f-9c7f-0df8bbffd0d3",
+      "sliceId": "08bbc77a-4353-4f51-9774-356dc0bbc48c",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "de73724e-d759-4c81-9525-2176cd0243bb",
+      "sliceId": "f43e0caf-3842-42be-ad91-89b010b3f013",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "8565a52e-fb26-406e-8c89-0bae5d12e750",
+      "sliceId": "877ac4ac-c574-49a7-9906-6e23a7c2b223",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "6dd143c2-6595-4f84-aa6d-accd0c04711b",
+      "sliceId": "2626fd13-a064-4b1b-b2fb-36944954e1e5",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "c3e7998c-b9a2-4603-a588-9b559247581e",
+      "sliceId": "9d6c6867-e814-4b0c-aa71-553c5ebd585c",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "19681619-a6fc-417f-bfcf-9d08614136ee",
+      "sliceId": "81c5f283-628f-4877-a840-de0b79ee4a20",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "63fbd44f-ac0a-4a38-b910-81f8f8b6e39a",
+      "sliceId": "ab925f1d-7732-4c2b-8484-2435aa9b38f3",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    }
+  ],
+  "tasks": [
+    {
+      "id": "2e6890a6-6d9b-4bf1-8ac2-7b03131329ec",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
+      "name": "Fix save button size",
+      "sorting": 1,
+      "done": true
+    },
+    {
+      "id": "309873b9-a3f3-442d-b7e2-213c8d65107e",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
+      "name": "Ask to save before closing the browser with changes",
+      "sorting": 2,
+      "done": false
+    },
+    {
+      "id": "538b2233-8248-4c65-9b6d-89dd5c92e18e",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
+      "name": "Warn before closing the `open` CLI command if there are pending changes in the local web state, giving the user the chance to save it before ending the server",
+      "sorting": 3,
+      "done": false
+    },
+    {
+      "id": "2a59de9f-0f27-4a99-b2bb-ac26c1a00c00",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
+      "name": "The indicator of unsaved changes remains visible after saving",
+      "sorting": 1.5,
+      "done": false
+    }
+  ]
+}
