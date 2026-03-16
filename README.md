@@ -5,14 +5,14 @@
 Vertical is a file-based project management tool built around the nine-box grid. No accounts, no cloud, no setup. Just a `.vertical` file and your terminal.
 
 ```
-npx vcli new my-project.vertical "My Project"
+npx itsvertical new my-project.vertical "My Project"
 ```
 
 ## Built for AI agents
 
 Vertical is designed to be used through AI coding agents like [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview). The CLI is the primary interface — every entity is addressed by ID, every command accepts `--json` for structured output, and errors are machine-readable. An agent can create a project, break work into scopes, add tasks, and track progress — all through the command line.
 
-The browser UI (`vcli open`) is there for when you want to see the board visually, drag things around, or get a quick overview.
+The browser UI (`itsvertical open`) is there for when you want to see the board visually, drag things around, or get a quick overview.
 
 ## How it works
 
@@ -23,64 +23,64 @@ Everything is saved to a single `.vertical` file. Version it with git, share it 
 ## Install
 
 ```
-npm install -g vcli
+npm install -g itsvertical
 ```
 
 Or run directly with npx:
 
 ```
-npx vcli new my-project.vertical "My Project"
+npx itsvertical new my-project.vertical "My Project"
 ```
 
 ## Commands
 
-All entities are addressed by ID. Use `vcli show` to see IDs. Every command accepts `--json` to output the full board state as JSON (useful for agents).
+All entities are addressed by ID. Use `itsvertical show` to see IDs. Every command accepts `--json` to output the full board state as JSON (useful for agents).
 
 ### Project
 
 ```
-vcli new <path> <name>                   # Create a new .vertical file
-vcli open <file>                         # Open in the browser UI
-vcli show <file>                         # Print the board to the terminal
-vcli show <file> --json                  # Output the board as JSON
-vcli show <file> --box <slice-id>        # Show only a specific box
-vcli rename <file> <name>                # Rename the project
+itsvertical new <path> <name>                   # Create a new .vertical file
+itsvertical open <file>                         # Open in the browser UI
+itsvertical show <file>                         # Print the board to the terminal
+itsvertical show <file> --json                  # Output the board as JSON
+itsvertical show <file> --box <slice-id>        # Show only a specific box
+itsvertical rename <file> <name>                # Rename the project
 ```
 
 ### Tasks
 
 ```
-vcli task add <file> <layer-id> <name>   # Add a task to a layer
-vcli task add <file> <lid> <n> --after <tid>  # Insert after a specific task
-vcli task done <file> <task-id>          # Mark a task as done
-vcli task undone <file> <task-id>        # Mark a task as not done
-vcli task rename <file> <task-id> <name> # Rename a task
-vcli task delete <file> <task-id>        # Delete a task
-vcli task move <file> <task-id> <layer>  # Move a task to another layer
+itsvertical task add <file> <layer-id> <name>   # Add a task to a layer
+itsvertical task add <file> <lid> <n> --after <tid>  # Insert after a specific task
+itsvertical task done <file> <task-id>          # Mark a task as done
+itsvertical task undone <file> <task-id>        # Mark a task as not done
+itsvertical task rename <file> <task-id> <name> # Rename a task
+itsvertical task delete <file> <task-id>        # Delete a task
+itsvertical task move <file> <task-id> <layer>  # Move a task to another layer
 ```
 
 ### Boxes
 
 ```
-vcli box rename <file> <slice-id> <name> # Rename a box
-vcli box clear <file> <slice-id>         # Clear box name
-vcli box swap <file> <id-1> <id-2>       # Swap two box positions
+itsvertical box rename <file> <slice-id> <name> # Rename a box
+itsvertical box clear <file> <slice-id>         # Clear box name
+itsvertical box swap <file> <id-1> <id-2>       # Swap two box positions
 ```
 
 ### Layers
 
 ```
-vcli layer split <file> <task-id>        # Split at a task (tasks after go to new layer)
-vcli layer merge <file> <layer-id>       # Merge with the next layer
-vcli layer rename <file> <layer-id> <n>  # Rename a layer
-vcli layer clear <file> <layer-id>       # Clear layer name
-vcli layer status <file> <layer-id> done # Set status to "done"
-vcli layer status <file> <layer-id> none # Clear status
+itsvertical layer split <file> <task-id>        # Split at a task (tasks after go to new layer)
+itsvertical layer merge <file> <layer-id>       # Merge with the next layer
+itsvertical layer rename <file> <layer-id> <n>  # Rename a layer
+itsvertical layer clear <file> <layer-id>       # Clear layer name
+itsvertical layer status <file> <layer-id> done # Set status to "done"
+itsvertical layer status <file> <layer-id> none # Clear status
 ```
 
 ### Browser UI
 
-`vcli open` starts a local server and opens the board in your browser. Click **Save** or press **Ctrl+S** / **Cmd+S** to write changes back to the file.
+`itsvertical open` starts a local server and opens the board in your browser. Click **Save** or press **Ctrl+S** / **Cmd+S** to write changes back to the file.
 
 ## The nine-box grid
 
@@ -151,8 +151,8 @@ pnpm run build:cli    # builds only the CLI
 
 ```
 pnpm run build
-pnpm run vcli -- new test-project.vertical "Test Project"
-pnpm run vcli -- open test-project.vertical
+pnpm run itsvertical -- new test-project.vertical "Test Project"
+pnpm run itsvertical -- open test-project.vertical
 ```
 
 ### Lint and type-check

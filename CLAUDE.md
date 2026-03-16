@@ -1,6 +1,6 @@
 # Agent Guidelines
 
-Vertical is a file-based project management tool with a CLI (`vcli`) and a browser-based nine-box grid UI. The npm package name is `vcli`. No server, no database, no auth — just `.vertical` files.
+Vertical is a file-based project management tool with a CLI (`itsvertical`) and a browser-based nine-box grid UI. The npm package name is `itsvertical`. No server, no database, no auth — just `.vertical` files.
 
 ## Architecture
 
@@ -43,9 +43,9 @@ pnpm run lint-fix     # Auto-fix linting and formatting
 
 ```bash
 pnpm run build
-pnpm run vcli -- new test.vertical "Test Project"
-pnpm run vcli -- show test.vertical
-pnpm run vcli -- open test.vertical
+pnpm run itsvertical -- new test.vertical "Test Project"
+pnpm run itsvertical -- show test.vertical
+pnpm run itsvertical -- open test.vertical
 ```
 
 ### Publish
@@ -93,7 +93,7 @@ npm publish
 The CLI is designed for AI agents as the primary user:
 
 - **IDs everywhere**: all entities (slices, layers, tasks) are addressed by UUID
-- **All output includes IDs**: `vcli show` prints IDs for every entity
+- **All output includes IDs**: `itsvertical show` prints IDs for every entity
 - **`--json` on every command**: outputs the full board state as JSON after any mutation
 - **JSON errors**: when `--json` is passed, errors output `{"error": "..."}` instead of plain text
 - **Deterministic**: same input, same output. No prompts, no interactivity.

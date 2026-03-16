@@ -35,7 +35,7 @@ type JsonOption = { json?: boolean }
 const program = new Command()
 
 program
-  .name('vcli')
+  .name('itsvertical')
   .description(
     "Tickets pile up, scopes get done. Project work isn't linear, it's Vertical."
   )

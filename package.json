@@ -1,5 +1,5 @@
 {
-  "name": "vcli",
+  "name": "itsvertical",
   "version": "0.0.1",
   "type": "module",
   "description": "Tickets pile up, scopes get done. Project work isn't linear, it's Vertical.",
@@ -11,7 +11,7 @@
     "url": "git+https://github.com/seasonedcc/vertical.git"
   },
   "bin": {
-    "vcli": "./cli/dist/index.js"
+    "itsvertical": "./cli/dist/index.js"
   },
   "files": ["cli/dist", "dist", "LICENSE.md", "README.md"],
   "engines": {
@@ -20,7 +20,7 @@
   "scripts": {
     "build": "vite build && tsup",
     "build:cli": "tsup",
-    "vcli": "node cli/dist/index.js",
+    "itsvertical": "node cli/dist/index.js",
     "lint": "biome check --error-on-warnings",
     "lint-fix": "biome check --write --error-on-warnings",
     "tsc": "tsc"
