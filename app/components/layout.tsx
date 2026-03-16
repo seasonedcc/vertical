@@ -165,7 +165,7 @@ function Layout({
         {isDirty() && <span className="text-accent text-xs">●</span>}
         <ul className="menu menu-horizontal ml-auto shrink-0 flex-nowrap gap-1 px-1">
           <li>
-            <button className="btn btn-neutral btn-xs" onClick={handleSave}>
+            <button className="btn btn-neutral btn-sm" onClick={handleSave}>
               Save
             </button>
           </li>
