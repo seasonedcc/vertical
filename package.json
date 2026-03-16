@@ -13,12 +13,7 @@
   "bin": {
     "itsvertical": "./cli/dist/index.js"
   },
-  "files": [
-    "cli/dist",
-    "dist",
-    "LICENSE.md",
-    "README.md"
-  ],
+  "files": ["cli/dist", "dist", "LICENSE.md", "README.md"],
   "engines": {
     "node": ">=20"
   },
@@ -41,7 +36,6 @@
     "@dnd-kit/collision": "0.1.21",
     "@dnd-kit/helpers": "0.1.21",
     "@dnd-kit/react": "0.1.21",
-    "@heroicons/react": "^2.1.1",
     "@radix-ui/react-select": "^2.0.0",
     "@tailwindcss/vite": "4.1.14",
     "@types/lodash-es": "4.17.12",
