@@ -1,5 +1,6 @@
 import { arrayMove } from '@dnd-kit/helpers'
 import type { DragDropEvents } from '@dnd-kit/react'
+import { sortBy } from 'lodash-es'
 import { useState } from 'react'
 import type { BoardAction } from '~/state/actions'
 import { useBoardState } from '~/state/context'
@@ -25,7 +26,8 @@ function useBoardDrag({
   tasks,
   dispatch,
 }: UseBoardDragConfig) {
-  const { slices: stateSlices } = useBoardState()
+  const { slices: rawSlices } = useBoardState()
+  const stateSlices = sortBy(rawSlices, 'boxNumber')
 
   const [draggingTask, setDraggingTask] = useState<PendingTask>()
   const [draggingSlice, setDraggingSlice] = useState<
