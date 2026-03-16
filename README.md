@@ -2,17 +2,23 @@
 
 **Tickets pile up, scopes get done. Project work isn't linear, it's Vertical.**
 
-Vertical is a file-based project management tool built around the nine-box grid. No accounts, no cloud, no setup. Just a `.vertical` file and your browser.
+Vertical is a file-based project management tool built around the nine-box grid. No accounts, no cloud, no setup. Just a `.vertical` file and your terminal.
 
 ```
 npx vcli new my-project.vertical "My Project"
 ```
 
+## Built for AI agents
+
+Vertical is designed to be used through AI coding agents like [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview). The CLI is the primary interface — every entity is addressed by ID, every command accepts `--json` for structured output, and errors are machine-readable. An agent can create a project, break work into scopes, add tasks, and track progress — all through the command line.
+
+The browser UI (`vcli open`) is there for when you want to see the board visually, drag things around, or get a quick overview.
+
 ## How it works
 
-Vertical organizes work into a 3x3 grid of boxes. Each box can hold tasks, and each box can be split into layers (steps). You drag tasks between boxes, split layers to break work into phases, and mark things done as you go.
+Vertical organizes work into a 3x3 grid of boxes. Each box can hold tasks, and each box can be split into layers (steps). Tasks move between boxes, layers break work into phases, and things get marked done as you go.
 
-Everything is saved to a single `.vertical` file on your machine. Open it, work on it, save it. That's it.
+Everything is saved to a single `.vertical` file. Version it with git, share it with teammates, or let your agent manage it.
 
 ## Install
 
@@ -117,7 +123,7 @@ It's just JSON. You can version it with git, share it with teammates, or back it
 
 ## Development
 
-This app lives in the `apps/vcli` directory of the [Remaster monorepo](https://github.com/seasonedcc/remaster).
+Source at [github.com/seasonedcc/vertical](https://github.com/seasonedcc/vertical).
 
 ### Architecture
 
