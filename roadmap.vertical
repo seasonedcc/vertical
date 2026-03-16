@@ -15,7 +15,7 @@
       "id": "7c7ecca3-156b-406a-ae00-037a0640cc17",
       "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
       "boxNumber": 2,
-      "name": null
+      "name": "Bug fixing"
     },
     {
       "id": "08bbc77a-4353-4f51-9774-356dc0bbc48c",
@@ -171,7 +171,7 @@
       "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Auto-refresh the web experience when the file changes",
-      "sorting": 5,
+      "sorting": 4,
       "done": true
     },
     {
@@ -179,7 +179,15 @@
       "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Auto-save from the web",
-      "sorting": 6,
+      "sorting": 2.75,
+      "done": true
+    },
+    {
+      "id": "68774dcb-95f5-4318-a87f-15e834ca11fe",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "layerId": "7784ba10-0d2b-4cbc-81fe-4d2982620f5f",
+      "name": "Drag and Drop boxes is not working. After dropping the boxes go back to starting point.",
+      "sorting": 1,
       "done": true
     }
   ]
