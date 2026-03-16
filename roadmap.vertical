@@ -189,6 +189,14 @@
       "name": "Drag and Drop boxes is not working. After dropping the boxes go back to starting point.",
       "sorting": 1,
       "done": true
+    },
+    {
+      "id": "6b3b1e24-7363-4244-8596-3e07919425f3",
+      "projectId": "eb6d2923-a4c1-4e65-aae8-0b8e624badd2",
+      "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
+      "name": "Add a visual mode for the 9-box in the terminal",
+      "sorting": 5,
+      "done": true
     }
   ]
 }
