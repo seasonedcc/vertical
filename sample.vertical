@@ -1,0 +1,432 @@
+{
+  "version": 1,
+  "project": {
+    "id": "16d63e6a-9141-4042-970c-fee71b1024f1",
+    "name": "Online Course Platform"
+  },
+  "slices": [
+    {
+      "id": "49b9c078-8a83-4aa4-b72c-e451a5b7f669",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "boxNumber": 1,
+      "name": "Course Catalog"
+    },
+    {
+      "id": "21fc6c28-dbea-4fa1-a743-339814d829f3",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "boxNumber": 2,
+      "name": "Video Player"
+    },
+    {
+      "id": "8ed6eb0f-a25b-4521-94db-89c849ccd444",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "boxNumber": 3,
+      "name": "Progress Tracking"
+    },
+    {
+      "id": "cce9d466-a2d9-48a2-93ca-ca72b7d0eab7",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "boxNumber": 4,
+      "name": "Quizzes"
+    },
+    {
+      "id": "9a1a4bd2-ab64-4fed-b018-93dbbe17bc16",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "boxNumber": 5,
+      "name": "Certificates"
+    },
+    {
+      "id": "5651129d-2167-45a2-a4d9-9bdfa0b5265c",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "boxNumber": 6,
+      "name": "Student Dashboard"
+    },
+    {
+      "id": "d918ea28-b5ff-4f4c-a78e-7c839adf8341",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "boxNumber": 7,
+      "name": "Instructor Tools"
+    },
+    {
+      "id": "e49f720e-1cb6-428d-b088-b8cac0b4a209",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "boxNumber": 8,
+      "name": "Payments"
+    },
+    {
+      "id": "aa272711-afd4-4eaf-b003-3c036e357224",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "boxNumber": 9,
+      "name": "Discussion Forum"
+    }
+  ],
+  "layers": [
+    {
+      "id": "53a6b6c8-e5f1-4779-bc2d-82a746dd475c",
+      "sliceId": "49b9c078-8a83-4aa4-b72c-e451a5b7f669",
+      "name": "Design",
+      "sorting": 1,
+      "status": "done"
+    },
+    {
+      "id": "dd03446b-f103-4f72-b8eb-0f82e5c251ea",
+      "sliceId": "21fc6c28-dbea-4fa1-a743-339814d829f3",
+      "name": "Design",
+      "sorting": 1,
+      "status": "done"
+    },
+    {
+      "id": "a2845109-d579-4824-8a18-4fd6c71e5eaf",
+      "sliceId": "8ed6eb0f-a25b-4521-94db-89c849ccd444",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "bea885e6-7ab6-4351-b45c-383da6ccbe7a",
+      "sliceId": "cce9d466-a2d9-48a2-93ca-ca72b7d0eab7",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "3ab27868-caa7-4cf2-9df8-c5ec983887e9",
+      "sliceId": "9a1a4bd2-ab64-4fed-b018-93dbbe17bc16",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "870c048a-becf-495a-9481-a180a7f1fac6",
+      "sliceId": "5651129d-2167-45a2-a4d9-9bdfa0b5265c",
+      "name": null,
+      "sorting": 1,
+      "status": "done"
+    },
+    {
+      "id": "ec26c282-612d-4e09-b341-c6d39f4c5c1c",
+      "sliceId": "d918ea28-b5ff-4f4c-a78e-7c839adf8341",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "083f23b6-cad6-4419-af0f-61b61f97b47b",
+      "sliceId": "e49f720e-1cb6-428d-b088-b8cac0b4a209",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "001b606f-482c-4d70-9dcd-9cdd6842fb42",
+      "sliceId": "aa272711-afd4-4eaf-b003-3c036e357224",
+      "name": null,
+      "sorting": 1,
+      "status": null
+    },
+    {
+      "id": "50777f83-70e6-4c4a-b514-bec9031dc6bc",
+      "sliceId": "49b9c078-8a83-4aa4-b72c-e451a5b7f669",
+      "name": "Build",
+      "sorting": 2,
+      "status": "done"
+    },
+    {
+      "id": "6c558626-1c7e-486e-9c9b-0d8c13e5c660",
+      "sliceId": "21fc6c28-dbea-4fa1-a743-339814d829f3",
+      "name": "Build",
+      "sorting": 2,
+      "status": null
+    }
+  ],
+  "tasks": [
+    {
+      "id": "7284e955-2151-4acf-974b-bfc0a033c80d",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "53a6b6c8-e5f1-4779-bc2d-82a746dd475c",
+      "name": "Course card component",
+      "sorting": 1,
+      "done": true
+    },
+    {
+      "id": "e1073295-bdf6-4ef7-a5e8-8f9d258a422b",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "53a6b6c8-e5f1-4779-bc2d-82a746dd475c",
+      "name": "Category filters",
+      "sorting": 2,
+      "done": true
+    },
+    {
+      "id": "fee78e66-1770-478d-af09-867add6c2681",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "53a6b6c8-e5f1-4779-bc2d-82a746dd475c",
+      "name": "Search with autocomplete",
+      "sorting": 3,
+      "done": true
+    },
+    {
+      "id": "7b97a903-9d30-4992-960b-4981cef71e04",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "50777f83-70e6-4c4a-b514-bec9031dc6bc",
+      "name": "Course detail page",
+      "sorting": 4,
+      "done": true
+    },
+    {
+      "id": "5ca75c3b-ed5e-466a-a542-961f91bb4ed2",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "50777f83-70e6-4c4a-b514-bec9031dc6bc",
+      "name": "Instructor bio section",
+      "sorting": 5,
+      "done": true
+    },
+    {
+      "id": "e2537c58-5019-4e6c-8ff4-a99deff1fad3",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "dd03446b-f103-4f72-b8eb-0f82e5c251ea",
+      "name": "Playback controls UI",
+      "sorting": 1,
+      "done": true
+    },
+    {
+      "id": "25130cb8-d7c1-4c9b-9d09-0cf2be0f7a3e",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "dd03446b-f103-4f72-b8eb-0f82e5c251ea",
+      "name": "Playback speed selector",
+      "sorting": 2,
+      "done": true
+    },
+    {
+      "id": "237a5028-60a0-492b-b3f6-4819ba617294",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "dd03446b-f103-4f72-b8eb-0f82e5c251ea",
+      "name": "HLS streaming integration",
+      "sorting": 3,
+      "done": true
+    },
+    {
+      "id": "3477a153-6f33-4f8f-bda7-4c0e429a9768",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "6c558626-1c7e-486e-9c9b-0d8c13e5c660",
+      "name": "Keyboard shortcuts",
+      "sorting": 4,
+      "done": false
+    },
+    {
+      "id": "892fdfcb-b4e7-4975-8e7b-327093dfd142",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "6c558626-1c7e-486e-9c9b-0d8c13e5c660",
+      "name": "Picture-in-picture mode",
+      "sorting": 5,
+      "done": false
+    },
+    {
+      "id": "d0726889-3f57-40c0-a352-c60ebfea1825",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "a2845109-d579-4824-8a18-4fd6c71e5eaf",
+      "name": "Lesson completion API",
+      "sorting": 1,
+      "done": true
+    },
+    {
+      "id": "f945b623-df17-428f-a07d-d12ab8603e61",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "a2845109-d579-4824-8a18-4fd6c71e5eaf",
+      "name": "Progress bar component",
+      "sorting": 2,
+      "done": false
+    },
+    {
+      "id": "5718ea8d-dc05-4d7c-a875-b0e1d56d1443",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "a2845109-d579-4824-8a18-4fd6c71e5eaf",
+      "name": "Resume where you left off",
+      "sorting": 3,
+      "done": false
+    },
+    {
+      "id": "4a8ca2e5-0342-47bf-b417-038f627c1cb2",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "a2845109-d579-4824-8a18-4fd6c71e5eaf",
+      "name": "Course completion email",
+      "sorting": 4,
+      "done": false
+    },
+    {
+      "id": "3c86dc23-a6da-402a-8d33-e129c4e38215",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "bea885e6-7ab6-4351-b45c-383da6ccbe7a",
+      "name": "Question editor for instructors",
+      "sorting": 1,
+      "done": false
+    },
+    {
+      "id": "8d1d4b52-aaac-402a-849a-9653eaf57c2c",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "bea885e6-7ab6-4351-b45c-383da6ccbe7a",
+      "name": "Multiple choice renderer",
+      "sorting": 2,
+      "done": false
+    },
+    {
+      "id": "d1b59626-e491-4412-be95-7abd55d68f65",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "bea885e6-7ab6-4351-b45c-383da6ccbe7a",
+      "name": "Score calculation",
+      "sorting": 3,
+      "done": false
+    },
+    {
+      "id": "4076dc6d-a463-4cdc-9710-d3399db12919",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "bea885e6-7ab6-4351-b45c-383da6ccbe7a",
+      "name": "Retry and review flow",
+      "sorting": 4,
+      "done": false
+    },
+    {
+      "id": "13152002-2ebf-4bf6-8d9a-e850c49e1258",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "3ab27868-caa7-4cf2-9df8-c5ec983887e9",
+      "name": "Certificate template design",
+      "sorting": 1,
+      "done": false
+    },
+    {
+      "id": "c30fb82c-e750-47ee-82ce-36149abfeaa2",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "3ab27868-caa7-4cf2-9df8-c5ec983887e9",
+      "name": "PDF generation",
+      "sorting": 2,
+      "done": false
+    },
+    {
+      "id": "46a47935-718d-4609-9c84-26d8add75689",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "3ab27868-caa7-4cf2-9df8-c5ec983887e9",
+      "name": "Shareable verification link",
+      "sorting": 3,
+      "done": false
+    },
+    {
+      "id": "66513f6f-112f-4167-b61a-bc2cc50cc251",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "870c048a-becf-495a-9481-a180a7f1fac6",
+      "name": "Enrolled courses list",
+      "sorting": 1,
+      "done": true
+    },
+    {
+      "id": "a88b92a8-2f04-4ea6-80b7-b4008507f198",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "870c048a-becf-495a-9481-a180a7f1fac6",
+      "name": "Learning streaks widget",
+      "sorting": 2,
+      "done": true
+    },
+    {
+      "id": "d5e204e9-31a8-484b-b301-c1252344bf0a",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "870c048a-becf-495a-9481-a180a7f1fac6",
+      "name": "Recommended next lessons",
+      "sorting": 3,
+      "done": true
+    },
+    {
+      "id": "a7e47379-992d-4db0-9475-ddd8220fff87",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "ec26c282-612d-4e09-b341-c6d39f4c5c1c",
+      "name": "Course creation wizard",
+      "sorting": 1,
+      "done": false
+    },
+    {
+      "id": "812b0faa-1b96-4e9d-9e5f-a5539d314295",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "ec26c282-612d-4e09-b341-c6d39f4c5c1c",
+      "name": "Video upload with processing",
+      "sorting": 2,
+      "done": false
+    },
+    {
+      "id": "f8ada63e-5b34-4f53-98b6-79a18d872891",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "ec26c282-612d-4e09-b341-c6d39f4c5c1c",
+      "name": "Curriculum editor",
+      "sorting": 3,
+      "done": false
+    },
+    {
+      "id": "46ea9c5b-0796-4d38-9d49-cc0736dc7bd8",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "ec26c282-612d-4e09-b341-c6d39f4c5c1c",
+      "name": "Student analytics view",
+      "sorting": 4,
+      "done": false
+    },
+    {
+      "id": "05d510a2-70b6-46eb-b70a-f55c18a4578a",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "083f23b6-cad6-4419-af0f-61b61f97b47b",
+      "name": "Stripe integration",
+      "sorting": 1,
+      "done": true
+    },
+    {
+      "id": "ecf06c31-877e-42a4-b082-104910111ad0",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "083f23b6-cad6-4419-af0f-61b61f97b47b",
+      "name": "Pricing page",
+      "sorting": 2,
+      "done": true
+    },
+    {
+      "id": "f97d03c4-44f0-4ceb-9289-96da0514bd83",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "083f23b6-cad6-4419-af0f-61b61f97b47b",
+      "name": "Invoice generation",
+      "sorting": 3,
+      "done": false
+    },
+    {
+      "id": "cc6ad032-8487-4045-8c3c-c48439a79d87",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "083f23b6-cad6-4419-af0f-61b61f97b47b",
+      "name": "Refund handling",
+      "sorting": 4,
+      "done": false
+    },
+    {
+      "id": "3fd5ac90-6f67-4c56-ad3e-6c065356dc25",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "001b606f-482c-4d70-9dcd-9cdd6842fb42",
+      "name": "Thread creation and replies",
+      "sorting": 1,
+      "done": false
+    },
+    {
+      "id": "5b62be6f-afb7-4035-95aa-aad69a04628f",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "001b606f-482c-4d70-9dcd-9cdd6842fb42",
+      "name": "Upvoting",
+      "sorting": 2,
+      "done": false
+    },
+    {
+      "id": "b41837c4-678d-4882-b1dd-b98e5dd2fff4",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "001b606f-482c-4d70-9dcd-9cdd6842fb42",
+      "name": "Instructor pinned answers",
+      "sorting": 3,
+      "done": false
+    },
+    {
+      "id": "8fe2a176-95a7-4634-b0b1-614a0fdb3ab6",
+      "projectId": "16d63e6a-9141-4042-970c-fee71b1024f1",
+      "layerId": "001b606f-482c-4d70-9dcd-9cdd6842fb42",
+      "name": "Email notifications",
+      "sorting": 4,
+      "done": false
+    }
+  ]
+}

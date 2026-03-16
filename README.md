@@ -4,6 +4,8 @@
 
 Vertical is a file-based project management tool built around the nine-box grid. No accounts, no cloud, no setup. Just a `.vertical` file and your terminal.
 
+![Vertical nine-box grid](app/images/screenshot.png)
+
 ```
 npx itsvertical new my-project.vertical "My Project"
 ```
