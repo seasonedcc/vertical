@@ -1,12 +1,12 @@
 # Agent Guidelines
 
-Vertical is a file-based project management tool with a CLI (`itsvertical`) and a browser-based nine-box grid UI. The npm package name is `itsvertical`. No server, no database, no auth — just `.vertical` files.
+Vertical is a file-based project management tool with a CLI (`itsvertical`) and a browser-based board UI. The npm package name is `itsvertical`. No server, no database, no auth — just `.vertical` files.
 
 ## Architecture
 
 The project has two parts:
 
-- **SPA** (`app/`) — React app built with Vite. The nine-box board UI. Built to `dist/`.
+- **SPA** (`app/`) — React app built with Vite. The board UI. Built to `dist/`.
 - **CLI** (`cli/`) — Node.js CLI built with tsup. Provides commands for managing `.vertical` files and a local HTTP server for the browser UI. Built to `cli/dist/`.
 
 The CLI and SPA share code: types (`app/state/types.ts`), serialization (`app/file/format.ts`), project creation (`app/state/initial-state.ts`), and the reducer (`app/state/reducer.ts`).
@@ -101,7 +101,7 @@ The CLI is designed for AI agents as the primary user:
 ## Data Model
 
 - **Project**: `{ id, name }` — the top-level entity
-- **Slices** (boxes): `{ id, projectId, boxNumber (1-9), name }` — the 9 boxes in the 3x3 grid
+- **Slices** (boxes): `{ id, projectId, boxNumber (1-9), name }` — each box is a vertical slice of work
 - **Layers**: `{ id, sliceId, name, sorting, status }` — steps within a box (can be split/merged)
 - **Tasks**: `{ id, projectId, layerId, name, sorting, done }` — work items within a layer
 

@@ -1,11 +1,11 @@
 ---
 name: vertical
-description: Manage projects with the Vertical nine-box grid using the itsvertical CLI. Create projects, add tasks, organize scopes, split layers, and track progress. Use when the user mentions Vertical, nine-box, project management, scopes, .vertical files, or itsvertical.
+description: Manage projects with the Vertical board using the itsvertical CLI. Create projects, add tasks, organize boxes, split layers, and track progress. Use when the user mentions Vertical, project management, boxes, slices, .vertical files, or itsvertical.
 ---
 
 # Vertical
 
-File-based project management with the nine-box grid. The CLI command is `itsvertical` (npm package: `itsvertical`).
+File-based project management with vertical slicing. The CLI command is `itsvertical` (npm package: `itsvertical`).
 
 ## Setup
 
@@ -28,7 +28,7 @@ Every Vertical project follows this pattern:
 ```bash
 itsvertical new project.vertical "Project Name"   # create a project
 itsvertical show project.vertical                  # see the board with IDs
-itsvertical box rename project.vertical <id> "Scope Name"  # name a box
+itsvertical box rename project.vertical <id> "Box Name"  # name a box
 itsvertical task add project.vertical <layer-id> "Task name"  # add tasks
 itsvertical task done project.vertical <task-id>   # mark done
 itsvertical open project.vertical                  # view in browser
@@ -37,7 +37,7 @@ itsvertical open project.vertical                  # view in browser
 ## Key Concepts
 
 - **Project**: a single `.vertical` file containing the full board state
-- **Boxes** (slices): 9 boxes in a 3x3 grid, numbered 1-9. Each represents a scope of work.
+- **Boxes** (slices): 9 boxes numbered 1-9. Each represents a vertical slice of work.
 - **Layers**: steps within a box. A box starts with one layer. Split to create phases (e.g., "Design" then "Build").
 - **Tasks**: work items within a layer. Can be marked done, renamed, moved, reordered.
 
@@ -89,17 +89,17 @@ itsvertical layer status <file> <layer-id> none  # Clear status
 
 ## Common Patterns
 
-### Set up a project with named scopes
+### Set up a project with named boxes
 
 ```bash
-itsvertical new project.vertical "Website Redesign"
+itsvertical new project.vertical "Online Course Platform"
 itsvertical show project.vertical  # get slice IDs
-itsvertical box rename project.vertical <id1> "Design"
-itsvertical box rename project.vertical <id2> "Frontend"
-itsvertical box rename project.vertical <id3> "Backend"
+itsvertical box rename project.vertical <id1> "Course Catalog"
+itsvertical box rename project.vertical <id2> "Video Player"
+itsvertical box rename project.vertical <id3> "Progress Tracking"
 ```
 
-### Add tasks to a scope
+### Add tasks to a box
 
 ```bash
 itsvertical show project.vertical --box <slice-id>  # get the layer ID
@@ -108,7 +108,7 @@ itsvertical task add project.vertical <layer-id> "Review with team"
 itsvertical task add project.vertical <layer-id> "Finalize design"
 ```
 
-### Split a scope into phases
+### Split a box into phases
 
 ```bash
 # Split after "Review with team" — tasks after it go to a new layer
@@ -126,7 +126,7 @@ itsvertical show project.vertical --json
 
 The JSON output contains the full board: project, slices (sorted by boxNumber), layers, and tasks with all IDs.
 
-### Move a task between scopes
+### Move a task between boxes
 
 ```bash
 # Move a task from one box's layer to another box's layer

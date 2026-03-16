@@ -2,9 +2,9 @@
 
 **Tickets pile up, scopes get done. Project work isn't linear, it's Vertical.**
 
-Vertical is a file-based project management tool built around the nine-box grid. No accounts, no cloud, no setup. Just a `.vertical` file and your terminal.
+Vertical is a file-based project management tool that organizes work into vertical slices that can each be completed independently. No accounts, no cloud, no setup. Just a `.vertical` file and your terminal.
 
-![Vertical nine-box grid](app/images/screenshot.png)
+![Vertical board](app/images/screenshot.png)
 
 ```
 npx itsvertical new my-project.vertical "My Project"
@@ -12,13 +12,13 @@ npx itsvertical new my-project.vertical "My Project"
 
 ## Built for AI agents
 
-Vertical is designed to be used through AI coding agents like [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview). The CLI is the primary interface — every entity is addressed by ID, every command accepts `--json` for structured output, and errors are machine-readable. An agent can create a project, break work into scopes, add tasks, and track progress — all through the command line.
+Vertical is designed to be used through AI coding agents. The CLI is the primary interface — every entity is addressed by ID, every command accepts `--json` for structured output, and errors are machine-readable. An agent can create a project, break work into slices, add tasks, and track progress — all through the command line.
 
 The browser UI (`itsvertical open`) is there for when you want to see the board visually, drag things around, or get a quick overview.
 
 ## How it works
 
-Vertical organizes work into a 3x3 grid of boxes. Each box can hold tasks, and each box can be split into layers (steps). Tasks move between boxes, layers break work into phases, and things get marked done as you go.
+Each slice is a box on the board. Add tasks to a box, and split it into layers when the work has distinct phases — design then build, for example. Slices get completed independently. Layers break the work within a slice into steps.
 
 Everything is saved to a single `.vertical` file. Version it with git, share it with teammates, or let your agent manage it.
 
@@ -94,9 +94,9 @@ itsvertical layer status <file> <layer-id> none # Clear status
 
 `itsvertical open` starts a local server and opens the board in your browser. Click **Save** or press **Ctrl+S** / **Cmd+S** to write changes back to the file.
 
-## The nine-box grid
+## The board
 
-The board is a 3x3 grid. Each box represents a scope of work.
+Each box represents a vertical slice of work.
 
 - **Name boxes** by clicking the title area
 - **Drag boxes** to rearrange them in the grid
@@ -141,7 +141,7 @@ Source at [github.com/seasonedcc/vertical](https://github.com/seasonedcc/vertica
 
 The package has two parts:
 
-- **SPA** (`app/`) — A React app built with Vite. This is the nine-box board UI. Built to `dist/`.
+- **SPA** (`app/`) — A React app built with Vite. The board UI. Built to `dist/`.
 - **CLI** (`cli/`) — A Node.js CLI built with tsup. Starts a local HTTP server that serves the SPA and provides a read/write API for the `.vertical` file. Built to `cli/dist/`.
 
 The CLI and SPA share code: types (`app/state/types.ts`), serialization (`app/file/format.ts`), and project creation (`app/state/initial-state.ts`).
