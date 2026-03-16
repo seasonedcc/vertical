@@ -8,4 +8,6 @@ cli/dist
 .env.*.local
 npm-debug.log*
 .pnpm-debug.log*
-.claude
+.claude/memory
+.claude/plans
+.claude/settings.local.json
