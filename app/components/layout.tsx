@@ -146,6 +146,17 @@ function Layout({
     return () => window.removeEventListener('keydown', handleKeydown)
   }, [state])
 
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (isDirty()) {
+        event.preventDefault()
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isDirty])
+
   return (
     <div
       className={cx(

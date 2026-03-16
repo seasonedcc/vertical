@@ -140,7 +140,7 @@
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Ask to save before closing the browser with changes",
       "sorting": 2,
-      "done": false
+      "done": true
     },
     {
       "id": "538b2233-8248-4c65-9b6d-89dd5c92e18e",
