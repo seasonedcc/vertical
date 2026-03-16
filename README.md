@@ -32,6 +32,16 @@ Or run directly with npx:
 npx itsvertical new my-project.vertical "My Project"
 ```
 
+### Agent skill
+
+Install the [Vertical skill](https://skills.sh/seasonedcc/vertical/vertical) to teach your AI agent how to use Vertical:
+
+```
+npx skills add seasonedcc/vertical
+```
+
+This gives agents like Claude Code, Cursor, and GitHub Copilot procedural knowledge of all Vertical commands and workflows.
+
 ## Commands
 
 All entities are addressed by ID. Use `itsvertical show` to see IDs. Every command accepts `--json` to output the full board state as JSON (useful for agents).
