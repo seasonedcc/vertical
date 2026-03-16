@@ -103,6 +103,17 @@ async function startServer(filePath: string) {
       return
     }
 
+    if (url === '/api/events' && req.method === 'GET') {
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      })
+      sseClients.add(res)
+      req.on('close', () => sseClients.delete(res))
+      return
+    }
+
     if (url === '/api/dirty' && req.method === 'POST') {
       const body = await readRequestBody(req)
       browserDirty = JSON.parse(body).dirty
@@ -126,6 +137,14 @@ async function startServer(filePath: string) {
 
   const port = await getPort()
   const url = `http://localhost:${port}`
+
+  const sseClients = new Set<http.ServerResponse>()
+
+  fs.watch(absoluteFilePath, () => {
+    for (const client of sseClients) {
+      client.write('data: file-changed\n\n')
+    }
+  })
 
   server.listen(port, () => {
     console.log(`\n  Vertical is running at ${url}`)

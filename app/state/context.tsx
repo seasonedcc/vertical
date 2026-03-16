@@ -34,6 +34,9 @@ function BoardProvider({
 
   const dispatch = useCallback((action: BoardAction) => {
     rawDispatch(action)
+    if (action.type === 'LOAD_STATE') {
+      setSavedSnapshot(serialize(action.state))
+    }
   }, [])
 
   const currentSnapshot = useMemo(() => serialize(state), [state])

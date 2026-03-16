@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { reportDirty, saveProject } from '~/file/api'
+import {
+  fetchProject,
+  reportDirty,
+  saveProject,
+  subscribeToFileChanges,
+} from '~/file/api'
 import logo from '~/images/logo.png'
 import { cx, usePlaceCursorOnClickedPosition } from '~/lib/utils'
 import {
@@ -125,9 +130,11 @@ function Layout({
   children: React.ReactNode
 }) {
   const state = useBoardState()
+  const dispatch = useBoardDispatch()
   const isDirty = useIsDirty()
   const markClean = useMarkClean()
   const { projectMode, setProjectMode } = useProjectMode()
+  const dirtyRef = useRef(false)
 
   const handleSave = async () => {
     await saveProject(state)
@@ -147,10 +154,19 @@ function Layout({
   }, [state])
 
   const dirty = isDirty()
+  dirtyRef.current = dirty
 
   useEffect(() => {
     reportDirty(dirty)
   }, [dirty])
+
+  useEffect(() => {
+    return subscribeToFileChanges(async () => {
+      if (dirtyRef.current) return
+      const newState = await fetchProject()
+      dispatch({ type: 'LOAD_STATE', state: newState })
+    })
+  }, [])
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {

@@ -29,4 +29,14 @@ function reportDirty(dirty: boolean): void {
   })
 }
 
-export { fetchProject, reportDirty, saveProject }
+function subscribeToFileChanges(onChanged: () => void): () => void {
+  const source = new EventSource('/api/events')
+  source.onmessage = (event) => {
+    if (event.data === 'file-changed') {
+      onChanged()
+    }
+  }
+  return () => source.close()
+}
+
+export { fetchProject, reportDirty, saveProject, subscribeToFileChanges }
