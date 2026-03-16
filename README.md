@@ -1,4 +1,4 @@
-# vcli
+# Vertical
 
 **Tickets pile up, scopes get done. Project work isn't linear, it's Vertical.**
 
