@@ -5,7 +5,21 @@ description: Manage projects with the Vertical nine-box grid using the itsvertic
 
 # Vertical
 
-File-based project management with the nine-box grid. Installed globally as `itsvertical` (npm package: `itsvertical`).
+File-based project management with the nine-box grid. The CLI command is `itsvertical` (npm package: `itsvertical`).
+
+## Setup
+
+Before using any commands, check if `itsvertical` is available:
+
+```bash
+itsvertical --version
+```
+
+If not found, install it globally:
+
+```bash
+npm install -g itsvertical
+```
 
 ## Core Workflow
 
