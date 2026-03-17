@@ -203,11 +203,14 @@ function Layout({
           <img src={logo} alt="Vertical" className="max-w-8" />
         </div>
         <EditableProjectName name={state.project.name} />
-        {dirty && (
-          <span className="flex items-center gap-1 text-accent text-xs">
-            ● Saving...
-          </span>
-        )}
+        <span
+          className={cx(
+            'flex items-center gap-1 text-accent text-xs',
+            !dirty && 'invisible'
+          )}
+        >
+          ● Saving...
+        </span>
         <ul className="menu menu-horizontal ml-auto shrink-0 flex-nowrap gap-1 px-1">
           <li>
             <button
