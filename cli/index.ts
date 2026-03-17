@@ -15,6 +15,12 @@ import {
 import { showBoardGrid, showSummaryTable } from './board.js'
 import { startServer } from './server.js'
 import { showBoard, showBoardJson } from './show.js'
+import {
+  checkAndUpdate,
+  checkForUpdate,
+  getUpdateCommandString,
+  performUpdate,
+} from './update.js'
 
 function getDirname() {
   if (typeof __dirname !== 'undefined') return __dirname
@@ -534,6 +540,75 @@ layer
     }
   )
 
+program
+  .command('update')
+  .description('Check for and install updates')
+  .option('--json', 'Output as JSON')
+  .option('--check', 'Only check, do not install')
+  .action(async (options: JsonOption & { check?: boolean }) => {
+    const result = await checkForUpdate(packageJson.version)
+
+    if (!result) {
+      if (options.json) {
+        console.log(
+          JSON.stringify({
+            currentVersion: packageJson.version,
+            latestVersion: packageJson.version,
+            updated: false,
+            message: 'Already up to date',
+          })
+        )
+      } else {
+        console.log(`Already up to date (v${packageJson.version})`)
+      }
+      return
+    }
+
+    if (options.check) {
+      if (options.json) {
+        console.log(
+          JSON.stringify({
+            currentVersion: packageJson.version,
+            latestVersion: result.latestVersion,
+            updated: false,
+            updateCommand: getUpdateCommandString(result.installContext),
+            message: `Update available: v${result.latestVersion}`,
+          })
+        )
+      } else {
+        console.log(
+          `Update available: v${packageJson.version} → v${result.latestVersion}`
+        )
+        console.log(`Run: ${getUpdateCommandString(result.installContext)}`)
+      }
+      return
+    }
+
+    const { success, message } = await performUpdate(result.installContext)
+    if (options.json) {
+      console.log(
+        JSON.stringify({
+          currentVersion: packageJson.version,
+          latestVersion: result.latestVersion,
+          updated: success,
+          message: success ? `Updated to v${result.latestVersion}` : message,
+        })
+      )
+    } else {
+      if (success) {
+        console.log(
+          `Updated: v${packageJson.version} → v${result.latestVersion}`
+        )
+      } else {
+        console.error(`Error: ${message}`)
+      }
+    }
+
+    if (!success) process.exit(1)
+  })
+
+const LONG_RUNNING_COMMANDS = new Set(['open', 'dev', 'update'])
+
 if (process.argv.length === 2) {
   program.outputHelp()
 } else {
@@ -542,5 +617,10 @@ if (process.argv.length === 2) {
     program.parse([...process.argv.slice(0, 2), 'open', args[0]])
   } else {
     program.parse(process.argv)
+  }
+
+  const command = args[0]
+  if (!LONG_RUNNING_COMMANDS.has(command)) {
+    checkAndUpdate(packageJson.version)
   }
 }
