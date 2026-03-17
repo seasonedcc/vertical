@@ -163,6 +163,18 @@ pnpm run build        # builds both SPA (vite) and CLI (tsup)
 pnpm run build:cli    # builds only the CLI
 ```
 
+### Dev
+
+```
+pnpm run dev
+```
+
+Starts a full dev environment with Vite HMR for the SPA and auto-restart for the CLI server. Creates a `dev.vertical` file from `sample.vertical` on first run (preserved across restarts). The browser opens automatically.
+
+- **SPA:** Vite dev server at `http://localhost:4007` with HMR
+- **CLI server:** Rebuilds and restarts automatically on changes (port 3456)
+- **API proxy:** Vite proxies `/api/*` to the CLI server
+
 ### Test locally
 
 ```
