@@ -1,4 +1,4 @@
-import { sortBy } from 'lodash-es'
+import { sortBy } from '~/lib/utils'
 import type { Layer, Slice, Task } from '~/state/types'
 
 type PendingTask = Task & { sliceId: string }

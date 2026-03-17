@@ -1,6 +1,6 @@
 import type { Ref, SVGProps } from 'react'
 import { forwardRef } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { cx } from '~/lib/utils'
 
 const DragHandleIcon = forwardRef(
   (
@@ -14,7 +14,7 @@ const DragHandleIcon = forwardRef(
       fill="none"
       viewBox="0 0 25 25"
       ref={ref}
-      className={twMerge(
+      className={cx(
         '-ml-1 h-5 w-5 shrink-0 cursor-move rounded border-2 border-transparent text-base-content/70 focus:border-neutral-content focus:outline-hidden active:border-transparent',
         className
       )}

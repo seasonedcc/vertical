@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { twMerge } from 'tailwind-merge'
-import { usePlaceCursorOnClickedPosition } from '~/lib/utils'
+import { cx, usePlaceCursorOnClickedPosition } from '~/lib/utils'
 import { useBoardDispatch } from '~/state/context'
 
 function EditableSlice({
@@ -100,7 +99,7 @@ function EditableSlice({
   return (
     <button
       tabIndex={0}
-      className={twMerge(
+      className={cx(
         'flex flex-1 cursor-text break-words border border-transparent p-0.5 text-left font-bold text-[16px] leading-[18px] focus:border-neutral-content focus:outline-hidden active:border-transparent',
         name
           ? 'text-black'

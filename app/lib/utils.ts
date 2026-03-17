@@ -52,4 +52,20 @@ function usePlaceCursorOnClickedPosition() {
   return { handleClick, handleFocus }
 }
 
-export { cx, usePlaceCursorOnClickedPosition }
+function sortBy<T extends Record<string, unknown>>(
+  array: T[],
+  keys: string | string[]
+): T[] {
+  const fields = Array.isArray(keys) ? keys : [keys]
+  return [...array].sort((a, b) => {
+    for (const key of fields) {
+      const aVal = a[key] as string | number
+      const bVal = b[key] as string | number
+      if (aVal < bVal) return -1
+      if (aVal > bVal) return 1
+    }
+    return 0
+  })
+}
+
+export { cx, sortBy, usePlaceCursorOnClickedPosition }

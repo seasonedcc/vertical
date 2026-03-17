@@ -1,7 +1,5 @@
 import type { Editor } from '@tiptap/core'
 
-import type { icons } from 'lucide-react'
-
 type Group = {
   name: string
   title: string
@@ -13,7 +11,7 @@ type Command = {
   label: string
   description: string
   aliases?: string[]
-  iconName: keyof typeof icons
+  iconName: string
   action: (editor: Editor) => void
   shouldBeHidden?: (editor: Editor) => boolean
 }

@@ -1,4 +1,4 @@
-import { sortBy } from 'lodash-es'
+import { sortBy } from '~/lib/utils'
 import type { BoardState } from '~/state/types'
 
 function showBoard(state: BoardState, boxId?: string) {

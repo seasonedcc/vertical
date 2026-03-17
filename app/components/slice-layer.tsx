@@ -1,7 +1,7 @@
 import { useDroppable } from '@dnd-kit/react'
 import { ChevronRightIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { cx } from '~/lib/utils'
 import type { Layer, Task } from '~/state/types'
 import { CheckIcon } from './check-icon'
 import type { OverLayerData } from './drag-helpers'
@@ -47,7 +47,7 @@ function SliceLayer({
 
   return (
     <div ref={ref} className="group relative isolate flex gap-2">
-      <div className={twMerge('flex w-full flex-col', isDone && 'group')}>
+      <div className={cx('flex w-full flex-col', isDone && 'group')}>
         {expanded && (totalLayers > 1 || isDone) && (
           <div className="flex items-start gap-1 px-4">
             {isDone ? (
@@ -115,9 +115,7 @@ function SliceLayer({
       )}
       {showLayerCheckmark && (
         <div className="-z-10 absolute inset-0 flex items-center justify-center">
-          <CheckIcon
-            className={twMerge('h-10 w-10 text-gray-300 opacity-60')}
-          />
+          <CheckIcon className="h-10 w-10 text-gray-300 opacity-60" />
         </div>
       )}
     </div>

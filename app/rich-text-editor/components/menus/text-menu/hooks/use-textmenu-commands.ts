@@ -22,11 +22,6 @@ const useTextmenuCommands = (editor: Editor) => {
     () => editor.chain().focus().toggleCode().run(),
     [editor]
   )
-  const onCodeBlock = useCallback(
-    () => editor.chain().focus().toggleCodeBlock().run(),
-    [editor]
-  )
-
   const onSubscript = useCallback(
     () => editor.chain().focus().toggleSubscript().run(),
     [editor]
@@ -68,7 +63,6 @@ const useTextmenuCommands = (editor: Editor) => {
     onStrike,
     onUnderline,
     onCode,
-    onCodeBlock,
     onSubscript,
     onSuperscript,
     onAlignLeft,
