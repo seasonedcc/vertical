@@ -607,8 +607,6 @@ program
     if (!success) process.exit(1)
   })
 
-const LONG_RUNNING_COMMANDS = new Set(['open', 'dev', 'update'])
-
 if (process.argv.length === 2) {
   program.outputHelp()
 } else {
@@ -619,8 +617,7 @@ if (process.argv.length === 2) {
     program.parse(process.argv)
   }
 
-  const command = args[0]
-  if (!LONG_RUNNING_COMMANDS.has(command)) {
+  if (args[0] !== 'update') {
     checkAndUpdate(packageJson.version)
   }
 }
