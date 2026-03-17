@@ -18,10 +18,11 @@
     "node": ">=20"
   },
   "scripts": {
+    "dev": "cp -n sample.vertical dev.vertical; tsup && concurrently -k -n vite,cli 'vite --open' 'pnpm run dev:cli'",
+    "dev:cli": "tsup --watch --onSuccess 'node cli/dist/index.js dev dev.vertical'",
     "build": "vite build && tsup",
     "build:cli": "tsup",
     "itsvertical": "node cli/dist/index.js",
-    "roadmap": "pnpm run build && node cli/dist/index.js open roadmap.vertical",
     "lint": "biome check --error-on-warnings",
     "lint-fix": "biome check --write --error-on-warnings",
     "tsc": "tsc"
@@ -68,6 +69,7 @@
     "@types/node": "^22.13.10",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
+    "concurrently": "^9.2.1",
     "daisyui": "5.3.7",
     "lodash-es": "^4.17.21",
     "lowlight": "^3.3.0",

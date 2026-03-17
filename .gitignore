@@ -1,6 +1,7 @@
 node_modules
 dist
 cli/dist
+dev.vertical
 .DS_Store
 *.pem
 *.tgz

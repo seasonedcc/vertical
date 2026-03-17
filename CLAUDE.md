@@ -32,12 +32,21 @@ All CLI commands follow the same pattern: read file → deserialize → apply re
 
 ```bash
 pnpm install          # Install dependencies
+pnpm run dev          # Start dev environment (Vite HMR + CLI auto-restart)
 pnpm run build        # Build both SPA (vite) and CLI (tsup)
 pnpm run build:cli    # Build only the CLI
 pnpm run tsc          # Type-check
 pnpm run lint         # Check code style with Biome
 pnpm run lint-fix     # Auto-fix linting and formatting
 ```
+
+### Dev
+
+`pnpm run dev` starts the full dev environment:
+- Creates `dev.vertical` from `sample.vertical` on first run (preserved across restarts)
+- Vite dev server with HMR at `http://localhost:4007`
+- CLI server on port 3456 (auto-restarts on CLI source changes)
+- Vite proxies `/api/*` to the CLI server
 
 ### Test locally
 

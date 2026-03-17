@@ -75,6 +75,15 @@ program
   })
 
 program
+  .command('dev')
+  .description('Start dev server (fixed port, no browser open)')
+  .argument('<file>', 'Path to the .vertical file')
+  .action(async (file: string) => {
+    const filePath = resolveFilePath(file)
+    await startServer(filePath, { port: 3456, open: false })
+  })
+
+program
   .command('show')
   .description('Print the board to the terminal')
   .argument('<file>', 'Path to the .vertical file')
