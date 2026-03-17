@@ -1,4 +1,5 @@
 import { useSortable } from '@dnd-kit/react/sortable'
+import { StickyNoteIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { cx, usePlaceCursorOnClickedPosition } from '~/lib/utils'
@@ -7,6 +8,7 @@ import type { Task } from '~/state/types'
 import { DragHandleIcon } from './drag-handle-icon'
 import type { OverTaskData } from './drag-helpers'
 import { useProjectMode } from './project-mode'
+import { useTaskNotes } from './task-notes-drawer'
 import { ToggleDoneButton } from './toggle-done-button'
 
 function EditableTask({
@@ -23,6 +25,7 @@ function EditableTask({
   variant: 'desktop' | 'mobile'
 }) {
   const dispatch = useBoardDispatch()
+  const { openNotes } = useTaskNotes()
   const [editing, setEditing] = useState(false)
   const [height, setHeight] = useState(16)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -148,7 +151,7 @@ function EditableTask({
       }}
       {...(variant === 'desktop' ? { tabIndex: -1 as const } : {})}
       className={cx(
-        'flex w-full items-start gap-1 rounded',
+        'group/task flex w-full items-start gap-1 rounded',
         variant === 'desktop' && 'touch-none',
         isDragging && 'bg-neutral-content/50 pb-1 text-transparent blur-xs'
       )}
@@ -211,6 +214,23 @@ function EditableTask({
         }}
       >
         {task.name}
+      </button>
+      <button
+        type="button"
+        className={cx(
+          'mt-0.5 flex-none rounded p-0.5 hover:bg-base-300',
+          task.notesHtml
+            ? 'text-base-content/40'
+            : 'text-base-content/20 opacity-0 group-hover/task:opacity-100',
+          isDragging && 'invisible'
+        )}
+        title="Notes"
+        onClick={(event) => {
+          event.stopPropagation()
+          openNotes(task.id)
+        }}
+      >
+        <StickyNoteIcon className="size-3" />
       </button>
     </div>
   )

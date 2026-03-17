@@ -38,6 +38,7 @@ type BoardAction =
       type: 'SORT_SLICES'
       slices: Array<{ id: string; boxNumber: number }>
     }
+  | { type: 'SET_TASK_NOTES'; taskId: string; notesHtml: string | null }
   | { type: 'LOAD_STATE'; state: BoardState }
 
 export type { BoardAction }

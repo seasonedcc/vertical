@@ -132,7 +132,8 @@
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Fix save button size",
       "sorting": 1,
-      "done": true
+      "done": true,
+      "notesHtml": null
     },
     {
       "id": "309873b9-a3f3-442d-b7e2-213c8d65107e",
@@ -140,7 +141,8 @@
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Ask to save before closing the browser with changes",
       "sorting": 2,
-      "done": true
+      "done": true,
+      "notesHtml": null
     },
     {
       "id": "538b2233-8248-4c65-9b6d-89dd5c92e18e",
@@ -148,7 +150,8 @@
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Warn before closing the `open` CLI command if there are pending changes in the local web state, giving the user the chance to save it before ending the server",
       "sorting": 3,
-      "done": true
+      "done": true,
+      "notesHtml": null
     },
     {
       "id": "2a59de9f-0f27-4a99-b2bb-ac26c1a00c00",
@@ -156,7 +159,8 @@
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "The indicator of unsaved changes remains visible after saving",
       "sorting": 1.5,
-      "done": true
+      "done": true,
+      "notesHtml": null
     },
     {
       "id": "1e9f83f3-2c9a-45e3-941d-363af298766a",
@@ -164,7 +168,8 @@
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Add favicon to the web experience",
       "sorting": 2.5,
-      "done": true
+      "done": true,
+      "notesHtml": null
     },
     {
       "id": "e525841f-de65-48dc-9ade-288602bd3020",
@@ -172,7 +177,8 @@
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Auto-refresh the web experience when the file changes",
       "sorting": 4,
-      "done": true
+      "done": true,
+      "notesHtml": null
     },
     {
       "id": "e41cc89e-00bd-4c7d-97fe-71486645cb99",
@@ -180,7 +186,8 @@
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Auto-save from the web",
       "sorting": 2.75,
-      "done": true
+      "done": true,
+      "notesHtml": null
     },
     {
       "id": "68774dcb-95f5-4318-a87f-15e834ca11fe",
@@ -188,7 +195,8 @@
       "layerId": "7784ba10-0d2b-4cbc-81fe-4d2982620f5f",
       "name": "Drag and Drop boxes is not working. After dropping the boxes go back to starting point.",
       "sorting": 1,
-      "done": true
+      "done": true,
+      "notesHtml": ""
     },
     {
       "id": "6b3b1e24-7363-4244-8596-3e07919425f3",
@@ -196,7 +204,8 @@
       "layerId": "e8a46937-7c9e-4670-9f21-a861aa12cee2",
       "name": "Add a visual mode for the 9-box in the terminal",
       "sorting": 5,
-      "done": true
+      "done": true,
+      "notesHtml": null
     }
   ]
 }

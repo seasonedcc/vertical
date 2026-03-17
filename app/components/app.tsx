@@ -5,6 +5,7 @@ import type { BoardState } from '~/state/types'
 import { Board } from './board'
 import { Layout } from './layout'
 import { ProjectModeProvider } from './project-mode'
+import { TaskNotesProvider } from './task-notes-drawer'
 
 function App() {
   const [boardState, setBoardState] = useState<BoardState | null>(null)
@@ -37,9 +38,11 @@ function App() {
   return (
     <BoardProvider initialState={boardState}>
       <ProjectModeProvider>
-        <Layout>
-          <Board />
-        </Layout>
+        <TaskNotesProvider>
+          <Layout>
+            <Board />
+          </Layout>
+        </TaskNotesProvider>
       </ProjectModeProvider>
     </BoardProvider>
   )

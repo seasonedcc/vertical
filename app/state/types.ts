@@ -25,6 +25,7 @@ type Task = {
   name: string
   sorting: number
   done: boolean
+  notesHtml: string | null
 }
 
 type BoardState = {

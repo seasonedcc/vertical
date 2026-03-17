@@ -1,0 +1,45 @@
+@reference "../tailwind.css";
+
+.ProseMirror {
+  @apply caret-black outline-0 z-0 mx-auto max-w-2xl;
+
+  .is-empty::before {
+    @apply text-black/40 float-left h-0 pointer-events-none w-full;
+  }
+
+  .selection {
+    @apply inline;
+  }
+
+  .selection,
+  *::selection {
+    @apply bg-black/10 inline;
+  }
+
+  & > .react-renderer {
+    @apply my-4 first:mt-0 last:mb-0;
+  }
+
+  &.ProseMirror-focused {
+    > p.has-focus.is-empty::before {
+      content: "Type  /  to browse options";
+    }
+  }
+
+  & > .is-editor-empty:first-child:last-child::before {
+    content: "Add notes …";
+  }
+
+  blockquote .is-empty:not(.is-editor-empty):first-child:last-child::before {
+    content: "Enter a quote";
+  }
+}
+
+[data-reference-hidden] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-theme="slash-command"] {
+  width: 1000vw;
+}

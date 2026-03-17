@@ -1,7 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @plugin "daisyui";
+@source inline("ProseMirror");
 @plugin "daisyui/theme" {
   name: "light";
   default: true;
@@ -30,6 +32,8 @@
 
   --animate-fade-in: fade-in 200ms ease-in;
   --animate-fade-out: fade-out 200ms ease-in;
+  --animate-slide-in-right: slide-in-right 200ms ease-out;
+  --animate-slide-out-right: slide-out-right 200ms ease-out;
 }
 
 @keyframes fade-in {
@@ -47,6 +51,24 @@
   }
   to {
     opacity: 0;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
   }
 }
 
