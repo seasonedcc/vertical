@@ -1,6 +1,8 @@
 ---
 name: skill-manager
 description: Create, manage, and debug Claude Code Agent Skills. Use when creating new skills, debugging skill activation issues, writing SKILL.md files, managing skill structure, or learning about Claude Code skills. Helps with personal skills, project skills, YAML frontmatter, descriptions, and troubleshooting.
+metadata:
+  internal: true
 ---
 
 # Skill Manager
@@ -210,6 +212,21 @@ Example:
 name: Safe File Reader
 description: Read files without making changes. Use when you need read-only file access.
 allowed-tools: Read, Grep, Glob
+---
+```
+
+**metadata.internal**: Hide skill from remote discovery via `npx skills add`
+- Set to `true` to prevent the skill from being offered when external users install skills from the repo
+- Internal skills still work locally — agents discover them from the filesystem as usual
+- Only the `vertical` skill in this project should be publicly discoverable; all other project skills must have `metadata.internal: true`
+
+Example:
+```yaml
+---
+name: my-internal-skill
+description: An internal skill not shown by default.
+metadata:
+  internal: true
 ---
 ```
 

@@ -1,6 +1,8 @@
 ---
 name: testing
 description: Write and run unit tests with Vitest. Use when writing tests, adding test coverage, debugging test failures, or when the user mentions testing, vitest, unit tests, or test-driven development.
+metadata:
+  internal: true
 ---
 
 # Testing
