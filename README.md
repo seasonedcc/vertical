@@ -183,6 +183,14 @@ pnpm run itsvertical -- new test-project.vertical "Test Project"
 pnpm run itsvertical -- open test-project.vertical
 ```
 
+### Test
+
+```
+pnpm run test
+```
+
+Unit tests use [Vitest](https://vitest.dev). Tests are co-located with source files (`*.test.ts`).
+
 ### Lint and type-check
 
 ```

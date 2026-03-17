@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
@@ -10,5 +11,8 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:3456',
     },
+  },
+  test: {
+    globals: false,
   },
 })
