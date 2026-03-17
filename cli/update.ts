@@ -14,9 +14,15 @@ type GlobalInstall = {
   packageManager: 'npm' | 'pnpm' | 'yarn' | 'bun'
 }
 type NpxCache = { type: 'npx-cache'; cachePath: string }
+type BunxCache = { type: 'bunx-cache'; cacheDir: string }
 type LocalInstall = { type: 'local' }
 type UnknownInstall = { type: 'unknown' }
-type InstallContext = GlobalInstall | NpxCache | LocalInstall | UnknownInstall
+type InstallContext =
+  | GlobalInstall
+  | NpxCache
+  | BunxCache
+  | LocalInstall
+  | UnknownInstall
 
 type UpdateCache = {
   lastCheck: number
@@ -134,6 +140,10 @@ function detectInstallContext(scriptPath: string): InstallContext {
 
   const bunDir = path.resolve(getBunGlobalDir())
   if (isPathInside(resolved, bunDir)) {
+    const bunCacheDir = path.join(bunDir, 'install', 'cache')
+    if (isPathInside(resolved, bunCacheDir)) {
+      return { type: 'bunx-cache', cacheDir: bunCacheDir }
+    }
     return { type: 'global', packageManager: 'bun' }
   }
 
@@ -253,6 +263,7 @@ function getUpdateCommand(
 ): [string, ...string[]] | null {
   if (context.type === 'local') return null
   if (context.type === 'npx-cache') return null
+  if (context.type === 'bunx-cache') return null
 
   const pm = context.type === 'global' ? context.packageManager : 'npm'
   switch (pm) {
@@ -285,6 +296,25 @@ async function performUpdate(
       }
     } catch {
       return { success: false, message: 'Failed to clear npx cache.' }
+    }
+  }
+
+  if (context.type === 'bunx-cache') {
+    try {
+      for (const entry of fs.readdirSync(context.cacheDir)) {
+        if (entry.startsWith('itsvertical@')) {
+          fs.rmSync(path.join(context.cacheDir, entry), {
+            recursive: true,
+            force: true,
+          })
+        }
+      }
+      return {
+        success: true,
+        message: 'Cleared bunx cache. Next run will fetch the latest version.',
+      }
+    } catch {
+      return { success: false, message: 'Failed to clear bunx cache.' }
     }
   }
 

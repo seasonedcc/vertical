@@ -71,7 +71,18 @@ describe('detectInstallContext', () => {
     })
   })
 
-  it('detects bun global install', () => {
+  it('detects bunx cache (not bun global)', () => {
+    const home = require('node:os').homedir()
+    const result = detectInstallContext(
+      `${home}/.bun/install/cache/itsvertical@0.0.5/node_modules/itsvertical/cli/dist/index.js`
+    )
+    expect(result).toEqual({
+      type: 'bunx-cache',
+      cacheDir: `${home}/.bun/install/cache`,
+    })
+  })
+
+  it('detects bun global install (not bunx cache)', () => {
     const home = require('node:os').homedir()
     const result = detectInstallContext(
       `${home}/.bun/install/global/node_modules/itsvertical/cli/dist/index.js`
@@ -266,6 +277,24 @@ describe('performUpdate', () => {
     const result = await performUpdate({ type: 'npx-cache', cachePath })
     expect(result.success).toBe(true)
     expect(require('node:fs').existsSync(cachePath)).toBe(false)
+  })
+
+  it('removes bunx cache entries for itsvertical', async () => {
+    const cacheDir = join(tempDir, 'bun-cache')
+    require('node:fs').mkdirSync(cacheDir)
+    const entry1 = join(cacheDir, 'itsvertical@0.0.4')
+    const entry2 = join(cacheDir, 'itsvertical@0.0.5')
+    const otherEntry = join(cacheDir, 'other-package@1.0.0')
+    require('node:fs').mkdirSync(entry1)
+    require('node:fs').mkdirSync(entry2)
+    require('node:fs').mkdirSync(otherEntry)
+
+    const { performUpdate } = await import('./update')
+    const result = await performUpdate({ type: 'bunx-cache', cacheDir })
+    expect(result.success).toBe(true)
+    expect(require('node:fs').existsSync(entry1)).toBe(false)
+    expect(require('node:fs').existsSync(entry2)).toBe(false)
+    expect(require('node:fs').existsSync(otherEntry)).toBe(true)
   })
 
   it('returns failure for local installs', async () => {
