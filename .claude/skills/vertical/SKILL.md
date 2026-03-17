@@ -23,6 +23,8 @@ npm install -g itsvertical
 
 ## Core Workflow
 
+When working on a task, always read its notes first with `itsvertical task notes <file> <task-id>`. Notes contain important context, requirements, and decisions about the work.
+
 Every Vertical project follows this pattern:
 
 ```bash
@@ -39,7 +41,7 @@ itsvertical open project.vertical                  # view in browser
 - **Project**: a single `.vertical` file containing the full board state
 - **Boxes** (slices): 9 boxes numbered 1-9. Each represents a vertical slice of work.
 - **Layers**: steps within a box. A box starts with one layer. Split to create phases (e.g., "Design" then "Build").
-- **Tasks**: work items within a layer. Can be marked done, renamed, moved, reordered.
+- **Tasks**: work items within a layer. Can be marked done, renamed, moved, reordered. Each task can have rich text notes (`notesHtml`).
 
 ## All Commands
 
@@ -67,6 +69,9 @@ itsvertical task undone <file> <task-id>         # Mark as not done
 itsvertical task rename <file> <task-id> <name>  # Rename
 itsvertical task delete <file> <task-id>         # Delete
 itsvertical task move <file> <task-id> <layer-id>  # Move to another layer
+itsvertical task notes <file> <task-id>           # Print task notes
+itsvertical task notes <file> <task-id> --set <html>  # Set notes (HTML)
+itsvertical task notes <file> <task-id> --clear   # Clear notes
 ```
 
 ### Boxes

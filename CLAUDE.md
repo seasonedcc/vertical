@@ -103,7 +103,7 @@ The CLI is designed for AI agents as the primary user:
 - **Project**: `{ id, name }` — the top-level entity
 - **Slices** (boxes): `{ id, projectId, boxNumber (1-9), name }` — each box is a vertical slice of work
 - **Layers**: `{ id, sliceId, name, sorting, status }` — steps within a box (can be split/merged)
-- **Tasks**: `{ id, projectId, layerId, name, sorting, done }` — work items within a layer
+- **Tasks**: `{ id, projectId, layerId, name, sorting, done, notesHtml }` — work items within a layer. `notesHtml` is rich text (HTML string or null).
 
 ## Definition of Done
 

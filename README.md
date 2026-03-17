@@ -70,6 +70,9 @@ itsvertical task undone <file> <task-id>        # Mark a task as not done
 itsvertical task rename <file> <task-id> <name> # Rename a task
 itsvertical task delete <file> <task-id>        # Delete a task
 itsvertical task move <file> <task-id> <layer>  # Move a task to another layer
+itsvertical task notes <file> <task-id>        # Print task notes
+itsvertical task notes <file> <tid> --set <html>  # Set notes (HTML)
+itsvertical task notes <file> <task-id> --clear   # Clear notes
 ```
 
 ### Boxes
