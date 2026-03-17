@@ -39,7 +39,7 @@ npx itsvertical new my-project.vertical "My Project"
 Install the [Vertical skill](https://skills.sh/seasonedcc/vertical/vertical) to teach your AI agent how to use Vertical:
 
 ```
-npx skills add seasonedcc/vertical/vertical
+npx skills add seasonedcc/vertical
 ```
 
 This gives agents like Claude Code, Cursor, and GitHub Copilot procedural knowledge of all Vertical commands and workflows.
