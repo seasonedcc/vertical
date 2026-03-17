@@ -200,12 +200,7 @@ pnpm run lint
 
 ### Publish
 
-```
-pnpm run build
-npm publish
-```
-
-The `files` field in `package.json` includes only `cli/dist` and `dist` — the built outputs. Source files are not published.
+Use the `/release` skill in Claude Code to publish a new version. It bumps the version, builds, and creates a GitHub release. You only need to run `npm publish` yourself (for OTP).
 
 ## Credits
 
