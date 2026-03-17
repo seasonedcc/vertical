@@ -38,7 +38,7 @@ const program = new Command()
 program
   .name('itsvertical')
   .description(
-    "Tickets pile up, scopes get done. Project work isn't linear, it's Vertical."
+    "Tickets pile up, scopes get done. Project work isn't linear, it's Vertical.\n\nTip: itsvertical <file.vertical> is a shorthand for itsvertical open <file>."
   )
   .version(packageJson.version)
 
@@ -537,5 +537,10 @@ layer
 if (process.argv.length === 2) {
   program.outputHelp()
 } else {
-  program.parse(process.argv)
+  const args = process.argv.slice(2)
+  if (args.length === 1 && args[0].endsWith('.vertical')) {
+    program.parse([...process.argv.slice(0, 2), 'open', args[0]])
+  } else {
+    program.parse(process.argv)
+  }
 }

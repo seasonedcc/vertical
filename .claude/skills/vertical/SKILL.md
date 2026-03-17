@@ -33,7 +33,7 @@ itsvertical show project.vertical                  # see the board with IDs
 itsvertical box rename project.vertical <id> "Box Name"  # name a box
 itsvertical task add project.vertical <layer-id> "Task name"  # add tasks
 itsvertical task done project.vertical <task-id>   # mark done
-itsvertical open project.vertical                  # view in browser
+itsvertical project.vertical                        # view in browser (shorthand for "open")
 ```
 
 ## Key Concepts
@@ -50,6 +50,7 @@ All entities are addressed by UUID. Use `itsvertical show` to get IDs. Every com
 ### Project
 
 ```bash
+itsvertical <file>                               # Shorthand for "open"
 itsvertical new <path> <name>                    # Create a new .vertical file
 itsvertical show <file>                          # Print board with IDs
 itsvertical show <file> --json                   # Output board as JSON
@@ -155,4 +156,4 @@ When `--json` is passed, errors output as `{"error": "..."}` instead of plain te
 
 - **Don't hardcode IDs** — always get fresh IDs from `itsvertical show` before operating on entities.
 - **Don't forget --json for scripting** — the human-readable output format is not stable; use `--json` for reliable parsing.
-- **Don't use `open` in automated workflows** — `open` starts a browser server meant for human interaction. Use the other commands for agent work.
+- **Don't use `open` (or the `itsvertical <file>` shorthand) in automated workflows** — it starts a browser server meant for human interaction. Use the other commands for agent work.

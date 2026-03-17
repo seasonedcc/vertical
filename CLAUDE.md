@@ -56,7 +56,7 @@ pnpm run lint-fix     # Auto-fix linting and formatting
 pnpm run build
 pnpm run itsvertical -- new test.vertical "Test Project"
 pnpm run itsvertical -- show test.vertical
-pnpm run itsvertical -- open test.vertical
+pnpm run itsvertical -- test.vertical
 ```
 
 ### Publish

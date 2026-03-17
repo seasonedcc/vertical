@@ -51,6 +51,7 @@ All entities are addressed by ID. Use `itsvertical show` to see IDs. Every comma
 ### Project
 
 ```
+itsvertical <file>                              # Shorthand for "open"
 itsvertical new <path> <name>                   # Create a new .vertical file
 itsvertical open <file>                         # Open in the browser UI
 itsvertical show <file>                         # Print the board to the terminal
@@ -96,7 +97,7 @@ itsvertical layer status <file> <layer-id> none # Clear status
 
 ### Browser UI
 
-`itsvertical open` starts a local server and opens the board in your browser. Click **Save** or press **Ctrl+S** / **Cmd+S** to write changes back to the file.
+`itsvertical open` (or just `itsvertical <file>`) starts a local server and opens the board in your browser. Changes are saved automatically.
 
 ## The board
 
@@ -121,7 +122,6 @@ Each box represents a vertical slice of work.
 | **Delete** / **Backspace** | Delete focused task or unsplit focused layer |
 | **Enter** | Save inline edit |
 | **Shift+Enter** | Save edit and create a new task below |
-| **Ctrl/Cmd+S** | Save to file |
 
 ## The `.vertical` file
 
