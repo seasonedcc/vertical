@@ -141,9 +141,7 @@ function EditableTask({
             type="button"
             className={cx(
               'mt-0.5 flex-none rounded p-0.5 hover:bg-base-300',
-              task.notesHtml
-                ? 'text-base-content/40'
-                : 'text-base-content/20'
+              task.notesHtml ? 'text-base-content/40' : 'text-base-content/20'
             )}
             title="Notes"
             onClick={(event) => {
