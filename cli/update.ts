@@ -5,7 +5,7 @@ import path from 'node:path'
 
 const CACHE_DIR = path.join(os.homedir(), '.itsvertical')
 const CACHE_FILE = path.join(CACHE_DIR, 'update-check.json')
-const CHECK_INTERVAL = 86_400_000
+const CHECK_INTERVAL = 3_600_000
 const FETCH_TIMEOUT = 5_000
 const REGISTRY_URL = 'https://registry.npmjs.org/itsvertical/latest'
 
@@ -222,9 +222,10 @@ async function fetchLatestVersion(): Promise<string | null> {
 }
 
 async function checkForUpdate(
-  currentVersion: string
+  currentVersion: string,
+  { skipCache = false } = {}
 ): Promise<UpdateInfo | null> {
-  if (!shouldCheckForUpdate(currentVersion)) {
+  if (!skipCache && !shouldCheckForUpdate(currentVersion)) {
     const cache = readCache()
     if (cache && compareSemver(cache.latestVersion, currentVersion) > 0) {
       return {
