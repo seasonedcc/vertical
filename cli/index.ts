@@ -546,7 +546,9 @@ program
   .option('--json', 'Output as JSON')
   .option('--check', 'Only check, do not install')
   .action(async (options: JsonOption & { check?: boolean }) => {
-    const result = await checkForUpdate(packageJson.version)
+    const result = await checkForUpdate(packageJson.version, {
+      skipCache: true,
+    })
 
     if (!result) {
       if (options.json) {
