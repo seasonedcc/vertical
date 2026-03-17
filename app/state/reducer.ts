@@ -21,6 +21,7 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
             name: action.name,
             sorting: action.sorting,
             done: false,
+            notesHtml: null,
           },
         ],
       }
@@ -51,6 +52,7 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
             name: '',
             sorting,
             done: false,
+            notesHtml: null,
           },
         ],
       }
@@ -173,6 +175,14 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
         tasks: updatedTasks,
       }
     }
+
+    case 'SET_TASK_NOTES':
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.taskId ? { ...t, notesHtml: action.notesHtml } : t
+        ),
+      }
 
     case 'RENAME_SLICE':
       return {

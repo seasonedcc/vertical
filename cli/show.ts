@@ -37,7 +37,8 @@ function showBoard(state: BoardState, boxId?: string) {
       } else {
         for (const task of layerTasks) {
           const check = task.done ? 'x' : ' '
-          console.log(`    [${check}] ${task.name} (id: ${task.id})`)
+          const notesTag = task.notesHtml ? ' [notes]' : ''
+          console.log(`    [${check}] ${task.name}${notesTag} (id: ${task.id})`)
         }
       }
     }

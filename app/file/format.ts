@@ -1,11 +1,11 @@
-import type { BoardState } from '~/state/types'
+import type { BoardState, Task } from '~/state/types'
 
 type VerticalFile = {
   version: 1
   project: BoardState['project']
   slices: BoardState['slices']
   layers: BoardState['layers']
-  tasks: BoardState['tasks']
+  tasks: Array<Omit<Task, 'notesHtml'> & { notesHtml?: string | null }>
 }
 
 function serialize(state: BoardState): string {
@@ -34,7 +34,7 @@ function deserialize(json: string): BoardState {
     project: file.project,
     slices: file.slices,
     layers: file.layers,
-    tasks: file.tasks,
+    tasks: file.tasks.map((t) => ({ ...t, notesHtml: t.notesHtml ?? null })),
   }
 }
 

@@ -287,6 +287,56 @@ task
     }
   )
 
+task
+  .command('notes')
+  .description('Get, set, or clear notes for a task')
+  .argument('<file>', 'Path to the .vertical file')
+  .argument('<task-id>', 'Task ID')
+  .option('--set <html>', 'Set the notes HTML content')
+  .option('--clear', 'Clear the notes')
+  .option('--json', 'Output as JSON')
+  .action(
+    (
+      file: string,
+      taskId: string,
+      options: JsonOption & { set?: string; clear?: boolean }
+    ) => {
+      const filePath = resolveFilePath(file, options.json)
+
+      if (options.set !== undefined) {
+        const state = applyAction(filePath, {
+          type: 'SET_TASK_NOTES',
+          taskId,
+          notesHtml: options.set,
+        })
+        output(state, Boolean(options.json), `Notes set (id: ${taskId})`)
+        return
+      }
+
+      if (options.clear) {
+        const state = applyAction(filePath, {
+          type: 'SET_TASK_NOTES',
+          taskId,
+          notesHtml: null,
+        })
+        output(state, Boolean(options.json), `Notes cleared (id: ${taskId})`)
+        return
+      }
+
+      const current = loadState(filePath)
+      const foundTask = current.tasks.find((t) => t.id === taskId)
+      if (!foundTask) {
+        fail(`Task not found: ${taskId}`, options.json)
+      }
+
+      if (options.json) {
+        console.log(JSON.stringify(current, null, 2))
+      } else {
+        console.log(foundTask.notesHtml ?? '(no notes)')
+      }
+    }
+  )
+
 const box = program.command('box').description('Manage boxes (slices)')
 
 box
