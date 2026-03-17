@@ -39,7 +39,7 @@ npx itsvertical new my-project.vertical "My Project"
 Install the [Vertical skill](https://skills.sh/seasonedcc/vertical/vertical) to teach your AI agent how to use Vertical:
 
 ```
-npx skills add seasonedcc/vertical
+npx skills add seasonedcc/vertical/vertical
 ```
 
 This gives agents like Claude Code, Cursor, and GitHub Copilot procedural knowledge of all Vertical commands and workflows.
@@ -182,6 +182,14 @@ pnpm run build
 pnpm run itsvertical -- new test-project.vertical "Test Project"
 pnpm run itsvertical -- open test-project.vertical
 ```
+
+### Test
+
+```
+pnpm run test
+```
+
+Unit tests use [Vitest](https://vitest.dev). Tests are co-located with source files (`*.test.ts`).
 
 ### Lint and type-check
 

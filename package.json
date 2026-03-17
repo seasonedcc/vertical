@@ -23,6 +23,8 @@
     "build": "vite build && tsup",
     "build:cli": "tsup",
     "itsvertical": "node cli/dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "biome check --error-on-warnings",
     "lint-fix": "biome check --write --error-on-warnings",
     "tsc": "tsc"
@@ -82,6 +84,7 @@
     "tsup": "^6.5.0",
     "typescript": "5.7.3",
     "vite": "^5.4.10",
-    "vite-tsconfig-paths": "^5.0.1"
+    "vite-tsconfig-paths": "^5.0.1",
+    "vitest": "^3.2.4"
   }
 }
