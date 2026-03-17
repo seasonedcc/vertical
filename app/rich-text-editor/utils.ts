@@ -1,13 +1,10 @@
 import { isTextSelection } from '@tiptap/core'
 import type { Editor } from '@tiptap/react'
-import { twMerge } from 'tailwind-merge'
 import { cx } from '~/lib/utils'
-import { CodeBlock, Link } from '~/rich-text-editor/extensions'
+import { Link } from '~/rich-text-editor/extensions'
 
 const isCustomNodeSelected = (editor: Editor) => {
-  const customNodes = [CodeBlock.name, Link.name]
-
-  return customNodes.some((type) => editor.isActive(type))
+  return editor.isActive(Link.name)
 }
 
 const isTextSelected = ({ editor }: { editor: Editor }) => {
@@ -30,7 +27,7 @@ const isTextSelected = ({ editor }: { editor: Editor }) => {
 }
 
 function cn(...inputs: unknown[]) {
-  return twMerge(cx(inputs))
+  return cx(inputs)
 }
 
 export { cn, isCustomNodeSelected, isTextSelected }

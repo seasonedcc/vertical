@@ -1,4 +1,4 @@
-import { sortBy } from 'lodash-es'
+import { sortBy } from '~/lib/utils'
 import type { BoardState, Layer, Slice } from '~/state/types'
 
 const MIN_COL_WIDTH = 25

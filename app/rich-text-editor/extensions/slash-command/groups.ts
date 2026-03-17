@@ -94,16 +94,6 @@ const GROUPS: Group[] = [
           editor.chain().focus().setBlockquote().run()
         },
       },
-      {
-        name: 'codeBlock',
-        label: 'Code Block',
-        iconName: 'SquareCode',
-        description: 'Code block with syntax highlighting',
-        shouldBeHidden: (editor) => editor.isActive('columns'),
-        action: (editor) => {
-          editor.chain().focus().setCodeBlock().run()
-        },
-      },
     ],
   },
   {

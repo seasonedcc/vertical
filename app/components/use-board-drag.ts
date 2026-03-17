@@ -1,7 +1,7 @@
 import { arrayMove } from '@dnd-kit/helpers'
 import type { DragDropEvents } from '@dnd-kit/react'
-import { sortBy } from 'lodash-es'
 import { useState } from 'react'
+import { sortBy } from '~/lib/utils'
 import type { BoardAction } from '~/state/actions'
 import { useBoardState } from '~/state/context'
 import type { Layer, Slice, Task } from '~/state/types'

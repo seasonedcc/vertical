@@ -1,6 +1,64 @@
-import { icons } from 'lucide-react'
+import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
+  Bold,
+  ChevronDown,
+  Code,
+  EllipsisVertical,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
+  Italic,
+  Link,
+  List,
+  ListOrdered,
+  Minus,
+  Pen,
+  Pilcrow,
+  Quote,
+  Strikethrough,
+  Subscript,
+  Superscript,
+  Trash2,
+  Underline,
+} from 'lucide-react'
 import { memo } from 'react'
 import { cn } from '~/rich-text-editor/utils'
+
+const iconMap = {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
+  Bold,
+  ChevronDown,
+  Code,
+  EllipsisVertical,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
+  Italic,
+  Link,
+  List,
+  ListOrdered,
+  Minus,
+  Pen,
+  Pilcrow,
+  Quote,
+  Strikethrough,
+  Subscript,
+  Superscript,
+  Trash2,
+  Underline,
+} as const
 
 const Icon = memo(
   ({
@@ -8,11 +66,11 @@ const Icon = memo(
     className,
     strokeWidth,
   }: {
-    name: keyof typeof icons
+    name: string
     className?: string
     strokeWidth?: number
   }) => {
-    const IconComponent = icons[name]
+    const IconComponent = iconMap[name as keyof typeof iconMap]
 
     if (!IconComponent) {
       return null

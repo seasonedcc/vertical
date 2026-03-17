@@ -1,5 +1,4 @@
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
-import type { icons } from 'lucide-react'
 import { useMemo } from 'react'
 import {
   DropdownButton,
@@ -16,7 +15,7 @@ type ContentTypePickerOption = {
   disabled: () => boolean
   isActive: () => boolean
   onClick: () => void
-  icon: keyof typeof icons
+  icon: string
 }
 
 type ContentTypePickerCategory = {

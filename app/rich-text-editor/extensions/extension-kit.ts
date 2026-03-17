@@ -1,6 +1,5 @@
 import {
   CharacterCount,
-  CodeBlock,
   Color,
   Focus,
   Highlight,
@@ -24,7 +23,6 @@ const ExtensionKit = () => [
   HoveredNode,
   StarterKit.configure({ codeBlock: false }),
   CharacterCount,
-  CodeBlock,
   TextStyle,
   Color,
   TrailingNode,
