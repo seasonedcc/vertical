@@ -78,7 +78,7 @@ function EditableTask({
           {variant === 'mobile' && <DragHandleIcon />}
           <ToggleDoneButton task={task} />
           <textarea
-            className="flex-grow translate-x-1 resize-none overflow-hidden border-0 bg-transparent p-0.5 pb-0 text-[12px] text-base-content/60 leading-[16px] placeholder:text-base-content/60 focus:shadow-md focus:ring-1 focus:ring-indigo-600"
+            className="min-w-0 flex-1 translate-x-1 resize-none overflow-hidden border-0 bg-transparent p-0.5 pb-0 text-[12px] text-base-content/60 leading-[16px] placeholder:text-base-content/60 focus:shadow-md focus:ring-1 focus:ring-indigo-600"
             style={{ height }}
             ref={textAreaRef}
             aria-label={task.name}
@@ -137,6 +137,22 @@ function EditableTask({
               setEditing(false)
             }}
           />
+          <button
+            type="button"
+            className={cx(
+              'mt-0.5 flex-none rounded p-0.5 hover:bg-base-300',
+              task.notesHtml
+                ? 'text-base-content/40'
+                : 'text-base-content/20'
+            )}
+            title="Notes"
+            onClick={(event) => {
+              event.stopPropagation()
+              openNotes(task.id)
+            }}
+          >
+            <StickyNoteIcon className="size-3" />
+          </button>
         </div>
       </form>
     )
