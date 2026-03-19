@@ -25,8 +25,8 @@ function TaskMarker({
   }
 
   return (
-    <div className="relative h-4 w-4 flex-none translate-y-0.5">
-      <span className="absolute inset-0 flex items-center justify-end opacity-[calc(1-var(--idle-opacity))] transition-opacity group-hover:opacity-[calc(1-var(--hover-opacity))]">
+    <div className="relative h-4 w-4 flex-none">
+      <span className="absolute inset-0 flex translate-y-0.5 items-center justify-end opacity-[calc(1-var(--idle-opacity))] transition-opacity group-hover:opacity-[calc(1-var(--hover-opacity))]">
         <span className="h-1 w-1 rounded-full bg-base-content/40" />
       </span>
       <ToggleDoneButton
