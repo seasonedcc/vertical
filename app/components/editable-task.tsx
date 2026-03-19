@@ -58,8 +58,19 @@ function EditableTask({
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const notesIconRef = useRef<HTMLButtonElement>(null)
   const { handleClick, handleFocus } = usePlaceCursorOnClickedPosition()
   const { projectMode } = useProjectMode()
+
+  const hasNotes = Boolean(task.notesHtml?.replace(/<[^>]*>/g, '').trim())
+
+  const flashNotesIcon = () => {
+    const el = notesIconRef.current
+    if (!el) return
+    el.classList.remove('animate-flash-notes')
+    void el.offsetWidth
+    el.classList.add('animate-flash-notes')
+  }
 
   const { ref, handleRef, isDragging } = useSortable({
     id: `task:${task.id}`,
@@ -71,12 +82,17 @@ function EditableTask({
   })
 
   const submitEdit = () => {
-    if (!textAreaRef.current) return
+    if (!textAreaRef.current) return true
 
     if (textAreaRef.current.value === '') {
+      if (hasNotes) {
+        textAreaRef.current.value = task.name
+        flashNotesIcon()
+        return false
+      }
       dispatch({ type: 'DELETE_TASK', taskId: task.id })
       onDeleted(index)
-      return
+      return true
     }
 
     const value = textAreaRef.current.value.trim()
@@ -84,6 +100,7 @@ function EditableTask({
     if (value && value !== task.name) {
       dispatch({ type: 'RENAME_TASK', taskId: task.id, name: value })
     }
+    return true
   }
 
   if (editing) {
@@ -93,7 +110,7 @@ function EditableTask({
         className="h-5 w-full"
         onSubmit={(event) => {
           event.preventDefault()
-          submitEdit()
+          if (!submitEdit()) return
 
           flushSync(() => {
             setEditing(false)
@@ -130,7 +147,7 @@ function EditableTask({
                   textarea.selectionEnd === textarea.value.length
 
                 if (event.shiftKey && isAtEnd) {
-                  submitEdit()
+                  if (!submitEdit()) return
 
                   dispatch({
                     type: 'CREATE_TASK_AFTER',
@@ -143,7 +160,7 @@ function EditableTask({
                   })
                   onTaskCreatedAfter(index)
                 } else if (!event.shiftKey) {
-                  submitEdit()
+                  if (!submitEdit()) return
                   flushSync(() => {
                     setEditing(false)
                   })
@@ -160,11 +177,12 @@ function EditableTask({
               setHeight(newHeight)
             }}
             onBlur={() => {
-              submitEdit()
+              if (!submitEdit()) return
               setEditing(false)
             }}
           />
           <button
+            ref={notesIconRef}
             type="button"
             className={cx(
               'mt-0.5 flex-none rounded p-0.5 hover:bg-base-300',
@@ -224,6 +242,10 @@ function EditableTask({
         onKeyDown={(event) => {
           if (['Backspace', 'Delete'].includes(event.key)) {
             event.stopPropagation()
+            if (hasNotes) {
+              flashNotesIcon()
+              return
+            }
             dispatch({ type: 'DELETE_TASK', taskId: task.id })
             onDeleted(index)
           }
@@ -250,6 +272,7 @@ function EditableTask({
         {task.name}
       </button>
       <button
+        ref={notesIconRef}
         type="button"
         className={cx(
           'mt-0.5 flex-none rounded p-0.5 hover:bg-base-300',
