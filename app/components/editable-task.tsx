@@ -11,6 +11,33 @@ import { useProjectMode } from './project-mode'
 import { useTaskNotes } from './task-notes-drawer'
 import { ToggleDoneButton } from './toggle-done-button'
 
+function TaskMarker({
+  variant,
+  isDragging,
+  task,
+}: {
+  variant: 'desktop' | 'mobile'
+  isDragging: boolean
+  task: Task
+}) {
+  if (variant === 'mobile') {
+    return <ToggleDoneButton hideForDragging={isDragging} task={task} />
+  }
+
+  return (
+    <div className="relative h-4 w-4 flex-none translate-y-0.5">
+      <span className="absolute inset-0 flex items-center justify-end opacity-[calc(1-var(--idle-opacity))] transition-opacity group-hover:opacity-[calc(1-var(--hover-opacity))]">
+        <span className="h-1 w-1 rounded-full bg-base-content/40" />
+      </span>
+      <ToggleDoneButton
+        className="absolute inset-0 opacity-[var(--idle-opacity)] transition-opacity group-hover:opacity-[var(--hover-opacity)]"
+        hideForDragging={isDragging}
+        task={task}
+      />
+    </div>
+  )
+}
+
 function EditableTask({
   task,
   onDeleted,
@@ -180,14 +207,7 @@ function EditableTask({
           tabIndex={-1}
         />
       )}
-      <ToggleDoneButton
-        className={cx(
-          variant === 'desktop' &&
-            'opacity-[var(--idle-opacity)] group-hover:opacity-[var(--hover-opacity)]'
-        )}
-        hideForDragging={isDragging}
-        task={task}
-      />
+      <TaskMarker variant={variant} isDragging={isDragging} task={task} />
       <button
         tabIndex={0}
         className={cx(
