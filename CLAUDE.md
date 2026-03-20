@@ -31,7 +31,7 @@ All CLI commands follow the same pattern: read file → deserialize → apply re
 
 ### Board registry
 
-The `new` command auto-registers boards in `~/.vertical/registry.json`. Use `itsvertical list` to see all known boards, `itsvertical register <file>` to add existing boards, and `itsvertical unregister <name-or-file>` to remove them.
+The `new` and `open` commands auto-register boards in `~/.vertical/registry.json`. Use `itsvertical list` to see all known boards, `itsvertical register <file>` to add existing boards, and `itsvertical unregister <name-or-file>` to remove them.
 
 ## Essential Commands
 
