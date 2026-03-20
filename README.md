@@ -95,6 +95,16 @@ itsvertical layer status <file> <layer-id> done # Set status to "done"
 itsvertical layer status <file> <layer-id> none # Clear status
 ```
 
+### Board Registry
+
+Vertical tracks known boards in `~/.vertical/registry.json`. Boards are auto-registered when created with `new` or opened with `open`.
+
+```
+itsvertical list                               # List all known boards
+itsvertical register <file>                    # Register an existing board
+itsvertical unregister <name-or-file>          # Remove a board from the registry
+```
+
 ### Browser UI
 
 `itsvertical open` (or just `itsvertical <file>`) starts a local server and opens the board in your browser. Changes are saved automatically.
@@ -108,6 +118,7 @@ Each box represents a vertical slice of work.
 - **Add tasks** by clicking the input at the bottom of a box
 - **Edit tasks** by clicking on them
 - **Mark tasks done** with the circle checkbox
+- **Add notes** to a task by clicking the sticky note icon (rich text editor with formatting, slash commands, and code blocks)
 - **Drag tasks** between boxes and layers
 - **Split layers** with the scissor tool (click ✂ or press **S**, then click a task to split at that point)
 - **Unsplit layers** by focusing the dashed separator and pressing **Delete**
