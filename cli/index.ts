@@ -79,6 +79,14 @@ program
   .argument('<file>', 'Path to the .vertical file')
   .action(async (file: string) => {
     const filePath = resolveFilePath(file)
+    const state = loadState(filePath)
+    try {
+      registerBoard(state.project.name, filePath)
+    } catch (error) {
+      console.warn(
+        `Warning: could not register board: ${(error as Error).message}`
+      )
+    }
     await startServer(filePath)
   })
 
