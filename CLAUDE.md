@@ -24,9 +24,14 @@ The browser UI communicates with the CLI server via two endpoints:
 - `cli/index.ts` — commander-based entry point with all commands
 - `cli/server.ts` — HTTP server (static file serving + API)
 - `cli/apply.ts` — shared helpers: load, save, apply reducer action, output formatting
+- `cli/registry.ts` — board registry (`~/.vertical/registry.json`) for tracking known boards
 - `cli/show.ts` — human-readable and JSON board display
 
 All CLI commands follow the same pattern: read file → deserialize → apply reducer action → serialize → write file. The `applyAction` helper in `cli/apply.ts` encapsulates this.
+
+### Board registry
+
+The `new` command auto-registers boards in `~/.vertical/registry.json`. Use `itsvertical list` to see all known boards, `itsvertical register <file>` to add existing boards, and `itsvertical unregister <name-or-file>` to remove them.
 
 ## Essential Commands
 

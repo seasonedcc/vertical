@@ -13,6 +13,7 @@ import {
   resolveFilePath,
 } from './apply.js'
 import { showBoardGrid, showSummaryTable } from './board.js'
+import { loadRegistry, registerBoard, unregisterBoard } from './registry.js'
 import { startServer } from './server.js'
 import { showBoard, showBoardJson } from './show.js'
 
@@ -62,6 +63,13 @@ program
 
     const state = createBlankProject(name)
     fs.writeFileSync(filePath, serialize(state))
+
+    try {
+      registerBoard(name, filePath)
+    } catch (error) {
+      fail((error as Error).message, options.json)
+    }
+
     output(state, Boolean(options.json), `Created: ${filePath}`)
   })
 
@@ -117,6 +125,69 @@ program
     const filePath = resolveFilePath(file, options.json)
     const state = applyAction(filePath, { type: 'RENAME_PROJECT', name })
     output(state, Boolean(options.json), `Project renamed to: ${name}`)
+  })
+
+program
+  .command('list')
+  .description('List all registered boards')
+  .option('--json', 'Output as JSON')
+  .action((options: JsonOption) => {
+    const registry = loadRegistry()
+    if (options.json) {
+      const entries = registry.boards.map((b) => ({
+        name: b.name,
+        filePath: b.filePath,
+        exists: fs.existsSync(b.filePath),
+      }))
+      console.log(JSON.stringify(entries, null, 2))
+      return
+    }
+    if (registry.boards.length === 0) {
+      console.log('No boards registered.')
+      return
+    }
+    for (const board of registry.boards) {
+      const exists = fs.existsSync(board.filePath)
+      const marker = exists ? '' : ' (missing)'
+      console.log(`${board.name}  ${board.filePath}${marker}`)
+    }
+  })
+
+program
+  .command('register')
+  .description('Register an existing .vertical file')
+  .argument('<file>', 'Path to the .vertical file')
+  .option('--json', 'Output as JSON')
+  .action((file: string, options: JsonOption) => {
+    const filePath = resolveFilePath(file, options.json)
+    const state = loadState(filePath)
+    try {
+      registerBoard(state.project.name, filePath)
+    } catch (error) {
+      fail((error as Error).message, options.json)
+    }
+    output(
+      state,
+      Boolean(options.json),
+      `Registered: ${state.project.name} → ${filePath}`
+    )
+  })
+
+program
+  .command('unregister')
+  .description('Remove a board from the registry (does not delete the file)')
+  .argument('<name-or-file>', 'Board name or file path')
+  .option('--json', 'Output as JSON')
+  .action((nameOrFile: string, options: JsonOption) => {
+    const removed = unregisterBoard(nameOrFile)
+    if (!removed) {
+      fail(`Board not found in registry: "${nameOrFile}"`, options.json)
+    }
+    if (options.json) {
+      console.log(JSON.stringify({ success: true }))
+    } else {
+      console.log(`Unregistered: ${nameOrFile}`)
+    }
   })
 
 const task = program.command('task').description('Manage tasks')

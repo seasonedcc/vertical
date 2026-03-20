@@ -34,6 +34,8 @@ itsvertical task done project.vertical <task-id>   # mark done
 itsvertical open project.vertical                  # view in browser
 ```
 
+The `new` command auto-registers boards in `~/.vertical/registry.json`. Use `itsvertical list` to find all known boards.
+
 ## Key Concepts
 
 - **Project**: a single `.vertical` file containing the full board state
@@ -52,9 +54,18 @@ itsvertical new <path> <name>                    # Create a new .vertical file
 itsvertical show <file>                          # Print board with IDs
 itsvertical show <file> --json                   # Output board as JSON
 itsvertical show <file> --box <slice-id>         # Show only one box
-itsvertical show <file> --visual                  # Show visual 3x3 grid with summary table
+itsvertical show <file> --visual                 # Show visual 3x3 grid with summary table
 itsvertical rename <file> <name>                 # Rename the project
 itsvertical open <file>                          # Open in browser UI
+```
+
+### Registry
+
+```bash
+itsvertical list                                 # List all registered boards
+itsvertical list --json                          # List as JSON array
+itsvertical register <file>                      # Register an existing .vertical file
+itsvertical unregister <name-or-file>            # Remove from registry (keeps file)
 ```
 
 ### Tasks
