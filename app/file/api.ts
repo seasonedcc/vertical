@@ -29,14 +29,21 @@ function reportDirty(dirty: boolean): void {
   })
 }
 
-function subscribeToFileChanges(onChanged: () => void): () => void {
+function subscribeToServer(
+  onFileChanged: () => void,
+  onDisconnected: () => void
+): () => void {
   const source = new EventSource('/api/events')
   source.onmessage = (event) => {
     if (event.data === 'file-changed') {
-      onChanged()
+      onFileChanged()
     }
+  }
+  source.onerror = () => {
+    source.close()
+    onDisconnected()
   }
   return () => source.close()
 }
 
-export { fetchProject, reportDirty, saveProject, subscribeToFileChanges }
+export { fetchProject, reportDirty, saveProject, subscribeToServer }

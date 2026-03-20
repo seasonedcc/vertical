@@ -4,7 +4,7 @@ import {
   fetchProject,
   reportDirty,
   saveProject,
-  subscribeToFileChanges,
+  subscribeToServer,
 } from '~/file/api'
 import logo from '~/images/logo.png'
 import { cx, usePlaceCursorOnClickedPosition } from '~/lib/utils'
@@ -134,6 +134,7 @@ function Layout({
   const isDirty = useIsDirty()
   const markClean = useMarkClean()
   const { projectMode, setProjectMode } = useProjectMode()
+  const [disconnected, setDisconnected] = useState(false)
   const dirtyRef = useRef(false)
 
   const handleSave = async () => {
@@ -169,11 +170,14 @@ function Layout({
   }, [dirty, state])
 
   useEffect(() => {
-    return subscribeToFileChanges(async () => {
-      if (dirtyRef.current) return
-      const newState = await fetchProject()
-      dispatch({ type: 'LOAD_STATE', state: newState })
-    })
+    return subscribeToServer(
+      async () => {
+        if (dirtyRef.current) return
+        const newState = await fetchProject()
+        dispatch({ type: 'LOAD_STATE', state: newState })
+      },
+      () => setDisconnected(true)
+    )
   }, [])
 
   useEffect(() => {
@@ -186,6 +190,24 @@ function Layout({
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [dirty])
+
+  if (disconnected) {
+    return (
+      <div
+        data-theme="dark"
+        className="flex h-[100dvh] flex-col items-center justify-center gap-4 bg-(--dark-bg) text-white"
+      >
+        <img src={logo} alt="Vertical" className="max-w-12" />
+        <h1 className="font-bold text-xl">Disconnected</h1>
+        <p className="text-base-content/50">The Vertical server has stopped.</p>
+        {dirty && (
+          <p className="text-sm text-warning">
+            You have unsaved changes that may be lost.
+          </p>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div
@@ -203,13 +225,15 @@ function Layout({
           <img src={logo} alt="Vertical" className="max-w-8" />
         </div>
         <EditableProjectName name={state.project.name} />
-        {dirty && <span className="text-accent text-xs">●</span>}
+        <span
+          className={cx(
+            'flex items-center gap-1 text-accent text-xs',
+            !dirty && 'invisible'
+          )}
+        >
+          ● Saving...
+        </span>
         <ul className="menu menu-horizontal ml-auto shrink-0 flex-nowrap gap-1 px-1">
-          <li>
-            <button className="btn btn-neutral btn-sm" onClick={handleSave}>
-              Save
-            </button>
-          </li>
           <li>
             <button
               className={cx(

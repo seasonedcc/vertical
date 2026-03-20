@@ -23,6 +23,8 @@ npm install -g itsvertical
 
 ## Core Workflow
 
+When working on a task, always read its notes first with `itsvertical task notes <file> <task-id>`. Notes contain important context, requirements, and decisions about the work.
+
 Every Vertical project follows this pattern:
 
 ```bash
@@ -31,7 +33,7 @@ itsvertical show project.vertical                  # see the board with IDs
 itsvertical box rename project.vertical <id> "Box Name"  # name a box
 itsvertical task add project.vertical <layer-id> "Task name"  # add tasks
 itsvertical task done project.vertical <task-id>   # mark done
-itsvertical open project.vertical                  # view in browser
+itsvertical project.vertical                        # view in browser (shorthand for "open")
 ```
 
 The `new` command auto-registers boards in `~/.vertical/registry.json`. Use `itsvertical list` to find all known boards.
@@ -41,7 +43,7 @@ The `new` command auto-registers boards in `~/.vertical/registry.json`. Use `its
 - **Project**: a single `.vertical` file containing the full board state
 - **Boxes** (slices): 9 boxes numbered 1-9. Each represents a vertical slice of work.
 - **Layers**: steps within a box. A box starts with one layer. Split to create phases (e.g., "Design" then "Build").
-- **Tasks**: work items within a layer. Can be marked done, renamed, moved, reordered.
+- **Tasks**: work items within a layer. Can be marked done, renamed, moved, reordered. Each task can have rich text notes (`notesHtml`).
 
 ## All Commands
 
@@ -50,6 +52,7 @@ All entities are addressed by UUID. Use `itsvertical show` to get IDs. Every com
 ### Project
 
 ```bash
+itsvertical <file>                               # Shorthand for "open"
 itsvertical new <path> <name>                    # Create a new .vertical file
 itsvertical show <file>                          # Print board with IDs
 itsvertical show <file> --json                   # Output board as JSON
@@ -78,6 +81,9 @@ itsvertical task undone <file> <task-id>         # Mark as not done
 itsvertical task rename <file> <task-id> <name>  # Rename
 itsvertical task delete <file> <task-id>         # Delete
 itsvertical task move <file> <task-id> <layer-id>  # Move to another layer
+itsvertical task notes <file> <task-id>           # Print task notes
+itsvertical task notes <file> <task-id> --set <html>  # Set notes (HTML)
+itsvertical task notes <file> <task-id> --clear   # Clear notes
 ```
 
 ### Boxes
@@ -161,4 +167,4 @@ When `--json` is passed, errors output as `{"error": "..."}` instead of plain te
 
 - **Don't hardcode IDs** — always get fresh IDs from `itsvertical show` before operating on entities.
 - **Don't forget --json for scripting** — the human-readable output format is not stable; use `--json` for reliable parsing.
-- **Don't use `open` in automated workflows** — `open` starts a browser server meant for human interaction. Use the other commands for agent work.
+- **Don't use `open` (or the `itsvertical <file>` shorthand) in automated workflows** — it starts a browser server meant for human interaction. Use the other commands for agent work.

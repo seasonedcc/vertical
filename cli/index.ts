@@ -16,6 +16,12 @@ import { showBoardGrid, showSummaryTable } from './board.js'
 import { loadRegistry, registerBoard, unregisterBoard } from './registry.js'
 import { startServer } from './server.js'
 import { showBoard, showBoardJson } from './show.js'
+import {
+  checkAndUpdate,
+  checkForUpdate,
+  getUpdateCommandString,
+  performUpdate,
+} from './update.js'
 
 function getDirname() {
   if (typeof __dirname !== 'undefined') return __dirname
@@ -39,7 +45,7 @@ const program = new Command()
 program
   .name('itsvertical')
   .description(
-    "Tickets pile up, scopes get done. Project work isn't linear, it's Vertical."
+    "Tickets pile up, scopes get done. Project work isn't linear, it's Vertical.\n\nTip: itsvertical <file.vertical> is a shorthand for itsvertical open <file>."
   )
   .version(packageJson.version)
 
@@ -88,6 +94,15 @@ program
       )
     }
     await startServer(filePath)
+  })
+
+program
+  .command('dev')
+  .description('Start dev server (fixed port, no browser open)')
+  .argument('<file>', 'Path to the .vertical file')
+  .action(async (file: string) => {
+    const filePath = resolveFilePath(file)
+    await startServer(filePath, { port: 3456, open: false })
   })
 
 program
@@ -604,8 +619,86 @@ layer
     }
   )
 
+program
+  .command('update')
+  .description('Check for and install updates')
+  .option('--json', 'Output as JSON')
+  .option('--check', 'Only check, do not install')
+  .action(async (options: JsonOption & { check?: boolean }) => {
+    const result = await checkForUpdate(packageJson.version, {
+      skipCache: true,
+    })
+
+    if (!result) {
+      if (options.json) {
+        console.log(
+          JSON.stringify({
+            currentVersion: packageJson.version,
+            latestVersion: packageJson.version,
+            updated: false,
+            message: 'Already up to date',
+          })
+        )
+      } else {
+        console.log(`Already up to date (v${packageJson.version})`)
+      }
+      return
+    }
+
+    if (options.check) {
+      if (options.json) {
+        console.log(
+          JSON.stringify({
+            currentVersion: packageJson.version,
+            latestVersion: result.latestVersion,
+            updated: false,
+            updateCommand: getUpdateCommandString(result.installContext),
+            message: `Update available: v${result.latestVersion}`,
+          })
+        )
+      } else {
+        console.log(
+          `Update available: v${packageJson.version} → v${result.latestVersion}`
+        )
+        console.log(`Run: ${getUpdateCommandString(result.installContext)}`)
+      }
+      return
+    }
+
+    const { success, message } = await performUpdate(result.installContext)
+    if (options.json) {
+      console.log(
+        JSON.stringify({
+          currentVersion: packageJson.version,
+          latestVersion: result.latestVersion,
+          updated: success,
+          message: success ? `Updated to v${result.latestVersion}` : message,
+        })
+      )
+    } else {
+      if (success) {
+        console.log(
+          `Updated: v${packageJson.version} → v${result.latestVersion}`
+        )
+      } else {
+        console.error(`Error: ${message}`)
+      }
+    }
+
+    if (!success) process.exit(1)
+  })
+
 if (process.argv.length === 2) {
   program.outputHelp()
 } else {
-  program.parse(process.argv)
+  const args = process.argv.slice(2)
+  if (args.length === 1 && args[0].endsWith('.vertical')) {
+    program.parse([...process.argv.slice(0, 2), 'open', args[0]])
+  } else {
+    program.parse(process.argv)
+  }
+
+  if (args[0] !== 'update') {
+    checkAndUpdate(packageJson.version)
+  }
 }

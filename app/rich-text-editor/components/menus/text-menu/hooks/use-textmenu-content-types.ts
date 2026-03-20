@@ -134,21 +134,6 @@ const useTextmenuContentTypes = (editor: Editor) => {
         type: 'option',
       },
       {
-        icon: 'FileCode2',
-        onClick: () =>
-          ctx.editor
-            .chain()
-            .focus()
-            .liftListItem('listItem')
-            .toggleCodeBlock()
-            .run(),
-        id: 'codeblock',
-        disabled: () => !ctx.editor.can().toggleCodeBlock(),
-        isActive: () => ctx.editor.isActive('codeBlock'),
-        label: 'Code block',
-        type: 'option',
-      },
-      {
         icon: 'List',
         onClick: () => ctx.editor.chain().focus().toggleBulletList().run(),
         id: 'bulletList',

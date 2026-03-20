@@ -73,7 +73,9 @@ function confirm(question: string): Promise<boolean> {
   })
 }
 
-async function startServer(filePath: string) {
+type ServerOptions = { port?: number; open?: boolean }
+
+async function startServer(filePath: string, options: ServerOptions = {}) {
   const absoluteFilePath = path.resolve(filePath)
   const distPath = getDistPath()
   let browserDirty = false
@@ -135,7 +137,7 @@ async function startServer(filePath: string) {
     res.end('Not Found')
   })
 
-  const port = await getPort()
+  const port = options.port ?? (await getPort())
   const url = `http://localhost:${port}`
 
   const sseClients = new Set<http.ServerResponse>()
@@ -150,7 +152,7 @@ async function startServer(filePath: string) {
     console.log(`\n  Vertical is running at ${url}`)
     console.log(`  Editing: ${absoluteFilePath}`)
     console.log('  Press Ctrl+C to stop\n')
-    open(url)
+    if (options.open !== false) open(url)
   })
 
   process.on('SIGINT', async () => {

@@ -1,6 +1,6 @@
 {
   "name": "itsvertical",
-  "version": "0.0.4",
+  "version": "0.0.9",
   "type": "module",
   "description": "Tickets pile up, scopes get done. Project work isn't linear, it's Vertical.",
   "license": "MIT",
@@ -18,10 +18,13 @@
     "node": ">=20"
   },
   "scripts": {
+    "dev": "cp -n sample.vertical dev.vertical; tsup && concurrently -k -n vite,cli 'vite --open' 'pnpm run dev:cli'",
+    "dev:cli": "tsup --watch --onSuccess 'node cli/dist/index.js dev dev.vertical'",
     "build": "vite build && tsup",
     "build:cli": "tsup",
     "itsvertical": "node cli/dist/index.js",
-    "roadmap": "pnpm run build && node cli/dist/index.js open roadmap.vertical",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "biome check --error-on-warnings",
     "lint-fix": "biome check --write --error-on-warnings",
     "tsc": "tsc"
@@ -46,8 +49,6 @@
     "@tiptap/core": "^2.27.2",
     "@tiptap/extension-bullet-list": "^2.27.2",
     "@tiptap/extension-character-count": "^2.27.2",
-    "@tiptap/extension-code-block": "^2.27.2",
-    "@tiptap/extension-code-block-lowlight": "^2.27.2",
     "@tiptap/extension-color": "^2.27.2",
     "@tiptap/extension-focus": "^2.27.2",
     "@tiptap/extension-highlight": "^2.27.2",
@@ -64,22 +65,20 @@
     "@tiptap/react": "^2.27.2",
     "@tiptap/starter-kit": "^2.27.2",
     "@tiptap/suggestion": "^2.27.2",
-    "@types/lodash-es": "4.17.12",
     "@types/node": "^22.13.10",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
+    "concurrently": "^9.2.1",
     "daisyui": "5.3.7",
-    "lodash-es": "^4.17.21",
-    "lowlight": "^3.3.0",
     "lucide-react": "^0.483.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "tailwind-merge": "3.3.1",
     "tailwindcss": "4.1.14",
     "tippy.js": "^6.3.7",
     "tsup": "^6.5.0",
     "typescript": "5.7.3",
     "vite": "^5.4.10",
-    "vite-tsconfig-paths": "^5.0.1"
+    "vite-tsconfig-paths": "^5.0.1",
+    "vitest": "^3.2.4"
   }
 }

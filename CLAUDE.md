@@ -37,12 +37,23 @@ The `new` and `open` commands auto-register boards in `~/.vertical/registry.json
 
 ```bash
 pnpm install          # Install dependencies
+pnpm run dev          # Start dev environment (Vite HMR + CLI auto-restart)
 pnpm run build        # Build both SPA (vite) and CLI (tsup)
 pnpm run build:cli    # Build only the CLI
+pnpm run test         # Run all unit tests
+pnpm run test:watch   # Run tests in watch mode
 pnpm run tsc          # Type-check
 pnpm run lint         # Check code style with Biome
 pnpm run lint-fix     # Auto-fix linting and formatting
 ```
+
+### Dev
+
+`pnpm run dev` starts the full dev environment:
+- Creates `dev.vertical` from `sample.vertical` on first run (preserved across restarts)
+- Vite dev server with HMR at `http://localhost:4007`
+- CLI server on port 3456 (auto-restarts on CLI source changes)
+- Vite proxies `/api/*` to the CLI server
 
 ### Test locally
 
@@ -50,7 +61,7 @@ pnpm run lint-fix     # Auto-fix linting and formatting
 pnpm run build
 pnpm run itsvertical -- new test.vertical "Test Project"
 pnpm run itsvertical -- show test.vertical
-pnpm run itsvertical -- open test.vertical
+pnpm run itsvertical -- test.vertical
 ```
 
 ### Publish
@@ -68,6 +79,7 @@ npm publish
 - **Type checking:** `pnpm run tsc`
 - **SPA build:** Vite
 - **CLI build:** tsup (bundles `cli/index.ts` with `~` alias resolved to `./app/`)
+- **Testing:** [Vitest](https://vitest.dev). Run with `pnpm run test`.
 - **Styling:** Tailwind CSS + DaisyUI
 
 ## TypeScript Guidelines
@@ -108,11 +120,11 @@ The CLI is designed for AI agents as the primary user:
 - **Project**: `{ id, name }` — the top-level entity
 - **Slices** (boxes): `{ id, projectId, boxNumber (1-9), name }` — each box is a vertical slice of work
 - **Layers**: `{ id, sliceId, name, sorting, status }` — steps within a box (can be split/merged)
-- **Tasks**: `{ id, projectId, layerId, name, sorting, done }` — work items within a layer
+- **Tasks**: `{ id, projectId, layerId, name, sorting, done, notesHtml }` — work items within a layer. `notesHtml` is rich text (HTML string or null).
 
 ## Definition of Done
 
-- A task is not done unless `pnpm run lint`, `pnpm run tsc`, and `pnpm run build` all pass.
+- A task is not done unless `pnpm run test`, `pnpm run lint`, `pnpm run tsc`, and `pnpm run build` all pass.
 - A task is not done if it has leftover comments.
 - Run `pnpm run lint-fix` before committing.
 

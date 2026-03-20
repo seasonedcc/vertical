@@ -34,6 +34,7 @@
   --animate-fade-out: fade-out 200ms ease-in;
   --animate-slide-in-right: slide-in-right 200ms ease-out;
   --animate-slide-out-right: slide-out-right 200ms ease-out;
+  --animate-flash-notes: flash-notes 600ms ease-out;
 }
 
 @keyframes fade-in {
@@ -60,6 +61,26 @@
   }
   to {
     transform: translateX(0);
+  }
+}
+
+@keyframes flash-notes {
+  0%,
+  100% {
+    color: var(--color-base-content);
+    transform: scale(1);
+  }
+  25% {
+    color: var(--color-error);
+    transform: scale(1.5);
+  }
+  50% {
+    color: var(--color-error);
+    transform: scale(1);
+  }
+  75% {
+    color: var(--color-error);
+    transform: scale(1.3);
   }
 }
 

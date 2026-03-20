@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
 import { forwardRef } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { cx } from '~/lib/utils'
 import type { Layer, Slice } from '~/state/types'
 import { CheckIcon } from './check-icon'
 
@@ -21,7 +21,7 @@ const SliceWrapper = forwardRef<HTMLDivElement, Props>(
         {...props}
         data-slice-wrapper={slice?.id}
         ref={ref}
-        className={twMerge(
+        className={cx(
           'relative isolate flex min-h-[calc((100dvh-112px)/3)] flex-1 flex-col gap-1 bg-white py-3 transition-all duration-200',
           allLayersDone && 'border-transparent',
           props.className
@@ -30,9 +30,7 @@ const SliceWrapper = forwardRef<HTMLDivElement, Props>(
         {children}
         {allLayersDone && (
           <div className="-z-10 absolute inset-0 flex items-center justify-center">
-            <CheckIcon
-              className={twMerge('h-36 w-36 text-gray-300 opacity-60')}
-            />
+            <CheckIcon className="h-36 w-36 text-gray-300 opacity-60" />
           </div>
         )}
       </div>

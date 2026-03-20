@@ -51,6 +51,7 @@ All entities are addressed by ID. Use `itsvertical show` to see IDs. Every comma
 ### Project
 
 ```
+itsvertical <file>                              # Shorthand for "open"
 itsvertical new <path> <name>                   # Create a new .vertical file
 itsvertical open <file>                         # Open in the browser UI
 itsvertical show <file>                         # Print the board to the terminal
@@ -70,9 +71,9 @@ itsvertical task undone <file> <task-id>        # Mark a task as not done
 itsvertical task rename <file> <task-id> <name> # Rename a task
 itsvertical task delete <file> <task-id>        # Delete a task
 itsvertical task move <file> <task-id> <layer>  # Move a task to another layer
-itsvertical task notes <file> <task-id>        # Get notes for a task
+itsvertical task notes <file> <task-id>        # Print task notes
 itsvertical task notes <file> <tid> --set <html>  # Set notes (HTML)
-itsvertical task notes <file> <tid> --clear    # Clear notes
+itsvertical task notes <file> <task-id> --clear   # Clear notes
 ```
 
 ### Boxes
@@ -106,7 +107,7 @@ itsvertical unregister <name-or-file>          # Remove a board from the registr
 
 ### Browser UI
 
-`itsvertical open` starts a local server and opens the board in your browser. Click **Save** or press **Ctrl+S** / **Cmd+S** to write changes back to the file.
+`itsvertical open` (or just `itsvertical <file>`) starts a local server and opens the board in your browser. Changes are saved automatically.
 
 ## The board
 
@@ -132,7 +133,6 @@ Each box represents a vertical slice of work.
 | **Delete** / **Backspace** | Delete focused task or unsplit focused layer |
 | **Enter** | Save inline edit |
 | **Shift+Enter** | Save edit and create a new task below |
-| **Ctrl/Cmd+S** | Save to file |
 
 ## The `.vertical` file
 
@@ -174,6 +174,18 @@ pnpm run build        # builds both SPA (vite) and CLI (tsup)
 pnpm run build:cli    # builds only the CLI
 ```
 
+### Dev
+
+```
+pnpm run dev
+```
+
+Starts a full dev environment with Vite HMR for the SPA and auto-restart for the CLI server. Creates a `dev.vertical` file from `sample.vertical` on first run (preserved across restarts). The browser opens automatically.
+
+- **SPA:** Vite dev server at `http://localhost:4007` with HMR
+- **CLI server:** Rebuilds and restarts automatically on changes (port 3456)
+- **API proxy:** Vite proxies `/api/*` to the CLI server
+
 ### Test locally
 
 ```
@@ -181,6 +193,14 @@ pnpm run build
 pnpm run itsvertical -- new test-project.vertical "Test Project"
 pnpm run itsvertical -- open test-project.vertical
 ```
+
+### Test
+
+```
+pnpm run test
+```
+
+Unit tests use [Vitest](https://vitest.dev). Tests are co-located with source files (`*.test.ts`).
 
 ### Lint and type-check
 
@@ -191,12 +211,7 @@ pnpm run lint
 
 ### Publish
 
-```
-pnpm run build
-npm publish
-```
-
-The `files` field in `package.json` includes only `cli/dist` and `dist` — the built outputs. Source files are not published.
+Use the `/release` skill in Claude Code to publish a new version. It bumps the version, builds, and creates a GitHub release. You only need to run `npm publish` yourself (for OTP).
 
 ## Credits
 

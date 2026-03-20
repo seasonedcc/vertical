@@ -1,6 +1,6 @@
 import { DragDropProvider, KeyboardSensor, PointerSensor } from '@dnd-kit/react'
-import { sortBy } from 'lodash-es'
 import { useEffect, useState } from 'react'
+import { sortBy } from '~/lib/utils'
 import { useBoardDispatch, useBoardState } from '~/state/context'
 import { BoardDragOverlay } from './board-drag-overlay'
 import { getTasks } from './drag-helpers'

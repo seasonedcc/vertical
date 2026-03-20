@@ -11,6 +11,33 @@ import { useProjectMode } from './project-mode'
 import { useTaskNotes } from './task-notes-drawer'
 import { ToggleDoneButton } from './toggle-done-button'
 
+function TaskMarker({
+  variant,
+  isDragging,
+  task,
+}: {
+  variant: 'desktop' | 'mobile'
+  isDragging: boolean
+  task: Task
+}) {
+  if (variant === 'mobile') {
+    return <ToggleDoneButton hideForDragging={isDragging} task={task} />
+  }
+
+  return (
+    <div className="relative h-4 w-4 flex-none">
+      <span className="absolute inset-0 flex translate-y-0.5 items-center justify-end opacity-[calc(1-var(--idle-opacity))] transition-opacity group-hover:opacity-[calc(1-var(--hover-opacity))]">
+        <span className="h-1 w-1 rounded-full bg-base-content/40" />
+      </span>
+      <ToggleDoneButton
+        className="absolute inset-0 opacity-[var(--idle-opacity)] transition-opacity group-hover:opacity-[var(--hover-opacity)]"
+        hideForDragging={isDragging}
+        task={task}
+      />
+    </div>
+  )
+}
+
 function EditableTask({
   task,
   onDeleted,
@@ -31,8 +58,19 @@ function EditableTask({
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const notesIconRef = useRef<HTMLButtonElement>(null)
   const { handleClick, handleFocus } = usePlaceCursorOnClickedPosition()
   const { projectMode } = useProjectMode()
+
+  const hasNotes = Boolean(task.notesHtml?.replace(/<[^>]*>/g, '').trim())
+
+  const flashNotesIcon = () => {
+    const el = notesIconRef.current
+    if (!el) return
+    el.classList.remove('animate-flash-notes')
+    void el.offsetWidth
+    el.classList.add('animate-flash-notes')
+  }
 
   const { ref, handleRef, isDragging } = useSortable({
     id: `task:${task.id}`,
@@ -44,12 +82,17 @@ function EditableTask({
   })
 
   const submitEdit = () => {
-    if (!textAreaRef.current) return
+    if (!textAreaRef.current) return true
 
     if (textAreaRef.current.value === '') {
+      if (hasNotes) {
+        textAreaRef.current.value = task.name
+        flashNotesIcon()
+        return false
+      }
       dispatch({ type: 'DELETE_TASK', taskId: task.id })
       onDeleted(index)
-      return
+      return true
     }
 
     const value = textAreaRef.current.value.trim()
@@ -57,6 +100,7 @@ function EditableTask({
     if (value && value !== task.name) {
       dispatch({ type: 'RENAME_TASK', taskId: task.id, name: value })
     }
+    return true
   }
 
   if (editing) {
@@ -66,7 +110,7 @@ function EditableTask({
         className="h-5 w-full"
         onSubmit={(event) => {
           event.preventDefault()
-          submitEdit()
+          if (!submitEdit()) return
 
           flushSync(() => {
             setEditing(false)
@@ -78,7 +122,7 @@ function EditableTask({
           {variant === 'mobile' && <DragHandleIcon />}
           <ToggleDoneButton task={task} />
           <textarea
-            className="flex-grow translate-x-1 resize-none overflow-hidden border-0 bg-transparent p-0.5 pb-0 text-[12px] text-base-content/60 leading-[16px] placeholder:text-base-content/60 focus:shadow-md focus:ring-1 focus:ring-indigo-600"
+            className="min-w-0 flex-1 translate-x-1 resize-none overflow-hidden border-0 bg-transparent p-0.5 pb-0 text-[12px] text-base-content/60 leading-[16px] placeholder:text-base-content/60 focus:shadow-md focus:ring-1 focus:ring-indigo-600"
             style={{ height }}
             ref={textAreaRef}
             aria-label={task.name}
@@ -103,7 +147,7 @@ function EditableTask({
                   textarea.selectionEnd === textarea.value.length
 
                 if (event.shiftKey && isAtEnd) {
-                  submitEdit()
+                  if (!submitEdit()) return
 
                   dispatch({
                     type: 'CREATE_TASK_AFTER',
@@ -116,7 +160,7 @@ function EditableTask({
                   })
                   onTaskCreatedAfter(index)
                 } else if (!event.shiftKey) {
-                  submitEdit()
+                  if (!submitEdit()) return
                   flushSync(() => {
                     setEditing(false)
                   })
@@ -133,10 +177,25 @@ function EditableTask({
               setHeight(newHeight)
             }}
             onBlur={() => {
-              submitEdit()
+              if (!submitEdit()) return
               setEditing(false)
             }}
           />
+          <button
+            ref={notesIconRef}
+            type="button"
+            className={cx(
+              'mt-0.5 flex-none rounded p-0.5 hover:bg-base-300',
+              task.notesHtml ? 'text-base-content/40' : 'text-base-content/20'
+            )}
+            title="Notes"
+            onClick={(event) => {
+              event.stopPropagation()
+              openNotes(task.id)
+            }}
+          >
+            <StickyNoteIcon className="size-3" />
+          </button>
         </div>
       </form>
     )
@@ -166,14 +225,7 @@ function EditableTask({
           tabIndex={-1}
         />
       )}
-      <ToggleDoneButton
-        className={cx(
-          variant === 'desktop' &&
-            'opacity-[var(--idle-opacity)] group-hover:opacity-[var(--hover-opacity)]'
-        )}
-        hideForDragging={isDragging}
-        task={task}
-      />
+      <TaskMarker variant={variant} isDragging={isDragging} task={task} />
       <button
         tabIndex={0}
         className={cx(
@@ -190,6 +242,10 @@ function EditableTask({
         onKeyDown={(event) => {
           if (['Backspace', 'Delete'].includes(event.key)) {
             event.stopPropagation()
+            if (hasNotes) {
+              flashNotesIcon()
+              return
+            }
             dispatch({ type: 'DELETE_TASK', taskId: task.id })
             onDeleted(index)
           }
@@ -216,6 +272,7 @@ function EditableTask({
         {task.name}
       </button>
       <button
+        ref={notesIconRef}
         type="button"
         className={cx(
           'mt-0.5 flex-none rounded p-0.5 hover:bg-base-300',

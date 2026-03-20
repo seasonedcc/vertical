@@ -1,6 +1,6 @@
 import * as Select from '@radix-ui/react-select'
 import { MoreHorizontal } from 'lucide-react'
-import { twMerge } from 'tailwind-merge'
+import { cx } from '~/lib/utils'
 import { useBoardDispatch } from '~/state/context'
 import type { Layer } from '~/state/types'
 
@@ -24,7 +24,7 @@ function StatusSelect({
     <Select.Root value={layer.status || '-'} onValueChange={onChange}>
       <Select.Trigger
         tabIndex={0}
-        className={twMerge(
+        className={cx(
           'inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-transparent bg-transparent text-base-content/60 opacity-0 transition-opacity focus:border-black/10 focus:opacity-100 focus:outline-hidden active:border-transparent group-hover:opacity-100 data-[state=open]:opacity-100',
           className
         )}
