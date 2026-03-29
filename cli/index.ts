@@ -13,7 +13,7 @@ import {
   resolveFilePath,
 } from './apply.js'
 import { showBoardGrid, showSummaryTable } from './board.js'
-import { loadRegistry, registerBoard, unregisterBoard } from './registry.js'
+import { forgetBoard, loadHistory, recordBoard } from './history.js'
 import { startServer } from './server.js'
 import { showBoard, showBoardJson } from './show.js'
 import {
@@ -71,7 +71,7 @@ program
     fs.writeFileSync(filePath, serialize(state))
 
     try {
-      registerBoard(name, filePath)
+      recordBoard(name, filePath)
     } catch (error) {
       fail((error as Error).message, options.json)
     }
@@ -87,10 +87,10 @@ program
     const filePath = resolveFilePath(file)
     const state = loadState(filePath)
     try {
-      registerBoard(state.project.name, filePath)
+      recordBoard(state.project.name, filePath)
     } catch (error) {
       console.warn(
-        `Warning: could not register board: ${(error as Error).message}`
+        `Warning: could not track board: ${(error as Error).message}`
       )
     }
     await startServer(filePath)
@@ -152,12 +152,12 @@ program
 
 program
   .command('list')
-  .description('List all registered boards')
+  .description('List all known boards')
   .option('--json', 'Output as JSON')
   .action((options: JsonOption) => {
-    const registry = loadRegistry()
+    const history = loadHistory()
     if (options.json) {
-      const entries = registry.boards.map((b) => ({
+      const entries = history.boards.map((b) => ({
         name: b.name,
         filePath: b.filePath,
         exists: fs.existsSync(b.filePath),
@@ -165,11 +165,11 @@ program
       console.log(JSON.stringify(entries, null, 2))
       return
     }
-    if (registry.boards.length === 0) {
-      console.log('No boards registered.')
+    if (history.boards.length === 0) {
+      console.log('No boards known yet. Create or open a board to get started.')
       return
     }
-    for (const board of registry.boards) {
+    for (const board of history.boards) {
       const exists = fs.existsSync(board.filePath)
       const marker = exists ? '' : ' (missing)'
       console.log(`${board.name}  ${board.filePath}${marker}`)
@@ -177,39 +177,39 @@ program
   })
 
 program
-  .command('register')
-  .description('Register an existing .vertical file')
+  .command('remember')
+  .description('Add an existing .vertical file to history')
   .argument('<file>', 'Path to the .vertical file')
   .option('--json', 'Output as JSON')
   .action((file: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
     const state = loadState(filePath)
     try {
-      registerBoard(state.project.name, filePath)
+      recordBoard(state.project.name, filePath)
     } catch (error) {
       fail((error as Error).message, options.json)
     }
     output(
       state,
       Boolean(options.json),
-      `Registered: ${state.project.name} → ${filePath}`
+      `Remembered: ${state.project.name} → ${filePath}`
     )
   })
 
 program
-  .command('unregister')
-  .description('Remove a board from the registry (does not delete the file)')
+  .command('forget')
+  .description('Remove a board from history (does not delete the file)')
   .argument('<name-or-file>', 'Board name or file path')
   .option('--json', 'Output as JSON')
   .action((nameOrFile: string, options: JsonOption) => {
-    const removed = unregisterBoard(nameOrFile)
+    const removed = forgetBoard(nameOrFile)
     if (!removed) {
-      fail(`Board not found in registry: "${nameOrFile}"`, options.json)
+      fail(`Board not found in history: "${nameOrFile}"`, options.json)
     }
     if (options.json) {
       console.log(JSON.stringify({ success: true }))
     } else {
-      console.log(`Unregistered: ${nameOrFile}`)
+      console.log(`Forgotten: ${nameOrFile}`)
     }
   })
 

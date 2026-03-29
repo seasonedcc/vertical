@@ -36,7 +36,7 @@ itsvertical task done project.vertical <task-id>   # mark done
 itsvertical project.vertical                        # view in browser (shorthand for "open")
 ```
 
-The `new` command auto-registers boards in `~/.vertical/registry.json`. Use `itsvertical list` to find all known boards.
+The `new` and `open` commands automatically track boards in `~/.vertical/history.json`. Use `itsvertical list` to find all known boards.
 
 ## Key Concepts
 
@@ -62,13 +62,13 @@ itsvertical rename <file> <name>                 # Rename the project
 itsvertical open <file>                          # Open in browser UI
 ```
 
-### Registry
+### History
 
 ```bash
-itsvertical list                                 # List all registered boards
+itsvertical list                                 # List all known boards
 itsvertical list --json                          # List as JSON array
-itsvertical register <file>                      # Register an existing .vertical file
-itsvertical unregister <name-or-file>            # Remove from registry (keeps file)
+itsvertical remember <file>                      # Manually add a board to history
+itsvertical forget <name-or-file>                # Remove from history (keeps file)
 ```
 
 ### Tasks

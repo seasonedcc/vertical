@@ -95,14 +95,14 @@ itsvertical layer status <file> <layer-id> done # Set status to "done"
 itsvertical layer status <file> <layer-id> none # Clear status
 ```
 
-### Board Registry
+### Board History
 
-Vertical tracks known boards in `~/.vertical/registry.json`. Boards are auto-registered when created with `new` or opened with `open`.
+Vertical automatically tracks boards you create and open in `~/.vertical/history.json`.
 
 ```
 itsvertical list                               # List all known boards
-itsvertical register <file>                    # Register an existing board
-itsvertical unregister <name-or-file>          # Remove a board from the registry
+itsvertical remember <file>                    # Manually add a board to history
+itsvertical forget <name-or-file>              # Remove a board from history
 ```
 
 ### Browser UI
