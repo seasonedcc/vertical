@@ -48,7 +48,7 @@ function slugify(name: string) {
     .replace(/^-+|-+$/g, '')
 }
 
-function recordBoard(name: string, filePath: string) {
+function addBoard(name: string, filePath: string) {
   const history = loadHistory()
   const slug = slugify(name)
   const existing = history.boards.find((b) => slugify(b.name) === slug)
@@ -63,7 +63,7 @@ function recordBoard(name: string, filePath: string) {
   }
 }
 
-function forgetBoard(nameOrPath: string) {
+function removeBoard(nameOrPath: string) {
   const history = loadHistory()
   const slug = slugify(nameOrPath)
   const absolutePath = path.resolve(nameOrPath)
@@ -78,5 +78,5 @@ function forgetBoard(nameOrPath: string) {
   return true
 }
 
-export { loadHistory, recordBoard, forgetBoard }
+export { loadHistory, addBoard, removeBoard }
 export type { BoardHistory, BoardHistoryEntry }
