@@ -73,7 +73,25 @@ Write release notes by analyzing the diff between the previous tag and `HEAD`. F
 - A short title line describing the main theme
 - A `### What's new` section with bullet points for each notable change
 - An `### Also in this release` section for minor changes (if any)
+- A `### New contributors` section if there are first-time contributors (see below)
 - A `**Full diff**` link at the end
+
+#### Check for new contributors
+
+Find all contributors in this release and compare against previous releases:
+
+```bash
+# Contributors in this release
+gh pr list --state merged --search "merged:>=<last-tag-date>" --json author --jq '.[].author.login' | sort -u
+
+# All previous contributors
+git log <last-tag> --format="%aN" | sort -u
+```
+
+For each new contributor, add a line like:
+```
+- @username made their first contribution in #<PR-number> 🎉
+```
 
 Use this format for the full diff link:
 ```
