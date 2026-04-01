@@ -13,6 +13,7 @@ import {
   resolveFilePath,
 } from './apply.js'
 import { showBoardGrid, showSummaryTable } from './board.js'
+import { forgetBoard, loadHistory, recordBoard } from './history.js'
 import { startServer } from './server.js'
 import { showBoard, showBoardJson } from './show.js'
 import {
@@ -68,6 +69,13 @@ program
 
     const state = createBlankProject(name)
     fs.writeFileSync(filePath, serialize(state))
+
+    try {
+      recordBoard(name, filePath)
+    } catch (error) {
+      fail((error as Error).message, options.json)
+    }
+
     output(state, Boolean(options.json), `Created: ${filePath}`)
   })
 
@@ -77,6 +85,14 @@ program
   .argument('<file>', 'Path to the .vertical file')
   .action(async (file: string) => {
     const filePath = resolveFilePath(file)
+    const state = loadState(filePath)
+    try {
+      recordBoard(state.project.name, filePath)
+    } catch (error) {
+      console.warn(
+        `Warning: could not track board: ${(error as Error).message}`
+      )
+    }
     await startServer(filePath)
   })
 
@@ -132,6 +148,71 @@ program
     const filePath = resolveFilePath(file, options.json)
     const state = applyAction(filePath, { type: 'RENAME_PROJECT', name })
     output(state, Boolean(options.json), `Project renamed to: ${name}`)
+  })
+
+const history = program.command('history').description('Manage board history')
+
+history
+  .command('list')
+  .description('List all known boards')
+  .option('--json', 'Output as JSON')
+  .action((options: JsonOption) => {
+    const boardHistory = loadHistory()
+    if (options.json) {
+      const entries = boardHistory.boards.map((b) => ({
+        name: b.name,
+        filePath: b.filePath,
+        exists: fs.existsSync(b.filePath),
+      }))
+      console.log(JSON.stringify(entries, null, 2))
+      return
+    }
+    if (boardHistory.boards.length === 0) {
+      console.log('No boards known yet. Create or open a board to get started.')
+      return
+    }
+    for (const board of boardHistory.boards) {
+      const exists = fs.existsSync(board.filePath)
+      const marker = exists ? '' : ' (missing)'
+      console.log(`${board.name}  ${board.filePath}${marker}`)
+    }
+  })
+
+history
+  .command('add')
+  .description('Add an existing .vertical file to history')
+  .argument('<file>', 'Path to the .vertical file')
+  .option('--json', 'Output as JSON')
+  .action((file: string, options: JsonOption) => {
+    const filePath = resolveFilePath(file, options.json)
+    const state = loadState(filePath)
+    try {
+      recordBoard(state.project.name, filePath)
+    } catch (error) {
+      fail((error as Error).message, options.json)
+    }
+    output(
+      state,
+      Boolean(options.json),
+      `Added to history: ${state.project.name} → ${filePath}`
+    )
+  })
+
+history
+  .command('remove')
+  .description('Remove a board from history (does not delete the file)')
+  .argument('<name-or-file>', 'Board name or file path')
+  .option('--json', 'Output as JSON')
+  .action((nameOrFile: string, options: JsonOption) => {
+    const removed = forgetBoard(nameOrFile)
+    if (!removed) {
+      fail(`Board not found in history: "${nameOrFile}"`, options.json)
+    }
+    if (options.json) {
+      console.log(JSON.stringify({ success: true }))
+    } else {
+      console.log(`Removed from history: ${nameOrFile}`)
+    }
   })
 
 const task = program.command('task').description('Manage tasks')

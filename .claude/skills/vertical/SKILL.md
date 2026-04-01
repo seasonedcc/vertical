@@ -36,6 +36,8 @@ itsvertical task done project.vertical <task-id>   # mark done
 itsvertical project.vertical                        # view in browser (shorthand for "open")
 ```
 
+The `new` and `open` commands automatically track boards in `~/.vertical/history.json`. Use `itsvertical history list` to find all known boards.
+
 ## Key Concepts
 
 - **Project**: a single `.vertical` file containing the full board state
@@ -55,9 +57,18 @@ itsvertical new <path> <name>                    # Create a new .vertical file
 itsvertical show <file>                          # Print board with IDs
 itsvertical show <file> --json                   # Output board as JSON
 itsvertical show <file> --box <slice-id>         # Show only one box
-itsvertical show <file> --visual                  # Show visual 3x3 grid with summary table
+itsvertical show <file> --visual                 # Show visual 3x3 grid with summary table
 itsvertical rename <file> <name>                 # Rename the project
 itsvertical open <file>                          # Open in browser UI
+```
+
+### History
+
+```bash
+itsvertical history list                         # List all known boards
+itsvertical history list --json                  # List as JSON array
+itsvertical history add <file>                   # Manually add a board to history
+itsvertical history remove <name-or-file>        # Remove from history (keeps file)
 ```
 
 ### Tasks

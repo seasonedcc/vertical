@@ -24,9 +24,14 @@ The browser UI communicates with the CLI server via two endpoints:
 - `cli/index.ts` — commander-based entry point with all commands
 - `cli/server.ts` — HTTP server (static file serving + API)
 - `cli/apply.ts` — shared helpers: load, save, apply reducer action, output formatting
+- `cli/history.ts` — board history (`~/.vertical/history.json`) for tracking known boards
 - `cli/show.ts` — human-readable and JSON board display
 
 All CLI commands follow the same pattern: read file → deserialize → apply reducer action → serialize → write file. The `applyAction` helper in `cli/apply.ts` encapsulates this.
+
+### Board history
+
+The `new` and `open` commands automatically track boards in `~/.vertical/history.json`. Use `itsvertical history list` to see all known boards, `itsvertical history add <file>` to manually add a board, and `itsvertical history remove <name-or-file>` to remove one.
 
 ## Essential Commands
 
