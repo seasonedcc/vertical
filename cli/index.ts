@@ -13,7 +13,7 @@ import {
   resolveFilePath,
 } from './apply.js'
 import { showBoardGrid, showSummaryTable } from './board.js'
-import { forgetBoard, loadHistory, recordBoard } from './history.js'
+import { addBoard, loadHistory, removeBoard } from './history.js'
 import { startServer } from './server.js'
 import { showBoard, showBoardJson } from './show.js'
 import {
@@ -71,7 +71,7 @@ program
     fs.writeFileSync(filePath, serialize(state))
 
     try {
-      recordBoard(name, filePath)
+      addBoard(name, filePath)
     } catch (error) {
       fail((error as Error).message, options.json)
     }
@@ -87,7 +87,7 @@ program
     const filePath = resolveFilePath(file)
     const state = loadState(filePath)
     try {
-      recordBoard(state.project.name, filePath)
+      addBoard(state.project.name, filePath)
     } catch (error) {
       console.warn(
         `Warning: could not track board: ${(error as Error).message}`
@@ -187,7 +187,7 @@ history
     const filePath = resolveFilePath(file, options.json)
     const state = loadState(filePath)
     try {
-      recordBoard(state.project.name, filePath)
+      addBoard(state.project.name, filePath)
     } catch (error) {
       fail((error as Error).message, options.json)
     }
@@ -204,7 +204,7 @@ history
   .argument('<name-or-file>', 'Board name or file path')
   .option('--json', 'Output as JSON')
   .action((nameOrFile: string, options: JsonOption) => {
-    const removed = forgetBoard(nameOrFile)
+    const removed = removeBoard(nameOrFile)
     if (!removed) {
       fail(`Board not found in history: "${nameOrFile}"`, options.json)
     }
