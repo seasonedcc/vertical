@@ -36,7 +36,7 @@ itsvertical task done project.vertical <task-id>   # mark done
 itsvertical project.vertical                        # view in browser (shorthand for "open")
 ```
 
-The `new` and `open` commands automatically track boards in `~/.vertical/history.json`. Use `itsvertical list` to find all known boards.
+The `new` and `open` commands automatically track boards in `~/.vertical/history.json`. Use `itsvertical history list` to find all known boards.
 
 ## Key Concepts
 
@@ -65,10 +65,10 @@ itsvertical open <file>                          # Open in browser UI
 ### History
 
 ```bash
-itsvertical list                                 # List all known boards
-itsvertical list --json                          # List as JSON array
-itsvertical remember <file>                      # Manually add a board to history
-itsvertical forget <name-or-file>                # Remove from history (keeps file)
+itsvertical history list                         # List all known boards
+itsvertical history list --json                  # List as JSON array
+itsvertical history add <file>                   # Manually add a board to history
+itsvertical history remove <name-or-file>        # Remove from history (keeps file)
 ```
 
 ### Tasks

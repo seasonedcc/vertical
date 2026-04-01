@@ -150,14 +150,16 @@ program
     output(state, Boolean(options.json), `Project renamed to: ${name}`)
   })
 
-program
+const history = program.command('history').description('Manage board history')
+
+history
   .command('list')
   .description('List all known boards')
   .option('--json', 'Output as JSON')
   .action((options: JsonOption) => {
-    const history = loadHistory()
+    const boardHistory = loadHistory()
     if (options.json) {
-      const entries = history.boards.map((b) => ({
+      const entries = boardHistory.boards.map((b) => ({
         name: b.name,
         filePath: b.filePath,
         exists: fs.existsSync(b.filePath),
@@ -165,19 +167,19 @@ program
       console.log(JSON.stringify(entries, null, 2))
       return
     }
-    if (history.boards.length === 0) {
+    if (boardHistory.boards.length === 0) {
       console.log('No boards known yet. Create or open a board to get started.')
       return
     }
-    for (const board of history.boards) {
+    for (const board of boardHistory.boards) {
       const exists = fs.existsSync(board.filePath)
       const marker = exists ? '' : ' (missing)'
       console.log(`${board.name}  ${board.filePath}${marker}`)
     }
   })
 
-program
-  .command('remember')
+history
+  .command('add')
   .description('Add an existing .vertical file to history')
   .argument('<file>', 'Path to the .vertical file')
   .option('--json', 'Output as JSON')
@@ -192,12 +194,12 @@ program
     output(
       state,
       Boolean(options.json),
-      `Remembered: ${state.project.name} → ${filePath}`
+      `Added to history: ${state.project.name} → ${filePath}`
     )
   })
 
-program
-  .command('forget')
+history
+  .command('remove')
   .description('Remove a board from history (does not delete the file)')
   .argument('<name-or-file>', 'Board name or file path')
   .option('--json', 'Output as JSON')
@@ -209,7 +211,7 @@ program
     if (options.json) {
       console.log(JSON.stringify({ success: true }))
     } else {
-      console.log(`Forgotten: ${nameOrFile}`)
+      console.log(`Removed from history: ${nameOrFile}`)
     }
   })
 

@@ -31,7 +31,7 @@ All CLI commands follow the same pattern: read file → deserialize → apply re
 
 ### Board history
 
-The `new` and `open` commands automatically track boards in `~/.vertical/history.json`. Use `itsvertical list` to see all known boards, `itsvertical remember <file>` to manually add a board, and `itsvertical forget <name-or-file>` to remove one.
+The `new` and `open` commands automatically track boards in `~/.vertical/history.json`. Use `itsvertical history list` to see all known boards, `itsvertical history add <file>` to manually add a board, and `itsvertical history remove <name-or-file>` to remove one.
 
 ## Essential Commands
 

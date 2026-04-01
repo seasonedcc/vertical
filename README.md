@@ -100,9 +100,9 @@ itsvertical layer status <file> <layer-id> none # Clear status
 Vertical automatically tracks boards you create and open in `~/.vertical/history.json`.
 
 ```
-itsvertical list                               # List all known boards
-itsvertical remember <file>                    # Manually add a board to history
-itsvertical forget <name-or-file>              # Remove a board from history
+itsvertical history list                       # List all known boards
+itsvertical history add <file>                 # Manually add a board to history
+itsvertical history remove <name-or-file>      # Remove a board from history
 ```
 
 ### Browser UI
