@@ -1,3 +1,4 @@
+import type { ActivityResponse } from '~/file/activity-types'
 import { deserialize, serialize } from '~/file/format'
 import type { BoardState } from '~/state/types'
 
@@ -46,4 +47,18 @@ function subscribeToServer(
   return () => source.close()
 }
 
-export { fetchProject, reportDirty, saveProject, subscribeToServer }
+async function fetchActivity(): Promise<ActivityResponse> {
+  const response = await fetch('/api/activity')
+  if (!response.ok) {
+    throw new Error(`Failed to load activity: ${response.statusText}`)
+  }
+  return response.json()
+}
+
+export {
+  fetchActivity,
+  fetchProject,
+  reportDirty,
+  saveProject,
+  subscribeToServer,
+}

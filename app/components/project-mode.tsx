@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
 
-type ProjectMode = 'default' | 'split'
+type ProjectMode = 'default' | 'split' | 'activity'
 
 type ProjectModeContextValue = {
   projectMode: ProjectMode

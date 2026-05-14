@@ -14,6 +14,7 @@ import {
   useIsDirty,
   useMarkClean,
 } from '~/state/context'
+import { useActivityAvailability } from './activity-availability'
 import { useProjectMode } from './project-mode'
 
 function EditableProjectName({
@@ -134,6 +135,7 @@ function Layout({
   const isDirty = useIsDirty()
   const markClean = useMarkClean()
   const { projectMode, setProjectMode } = useProjectMode()
+  const activityAvailability = useActivityAvailability()
   const [disconnected, setDisconnected] = useState(false)
   const dirtyRef = useRef(false)
 
@@ -234,6 +236,25 @@ function Layout({
           ● Saving...
         </span>
         <ul className="menu menu-horizontal ml-auto shrink-0 flex-nowrap gap-1 px-1">
+          {activityAvailability === 'available' && (
+            <li>
+              <button
+                className={cx(
+                  'btn btn-neutral btn-sm',
+                  projectMode === 'activity' && 'ring-2 ring-accent'
+                )}
+                onClick={() =>
+                  setProjectMode(
+                    projectMode === 'activity' ? 'default' : 'activity'
+                  )
+                }
+                title="Toggle activity view"
+              >
+                <span className="text-base">🕒</span>
+                <span className="hidden sm:inline">Activity</span>
+              </button>
+            </li>
+          )}
           <li>
             <button
               className={cx(

@@ -105,6 +105,23 @@ itsvertical layer status <file> <layer-id> done  # Set status to done
 itsvertical layer status <file> <layer-id> none  # Clear status
 ```
 
+### Activity
+
+Reconstructs a per-author timeline from the file's git history. Only works when the .vertical file is committed to git.
+
+```bash
+itsvertical activity <file>                      # Print timeline
+itsvertical activity <file> --json               # As JSON
+itsvertical activity <file> --author <name>      # Filter by author (passed to git log)
+itsvertical activity <file> --since <date>       # Events since a date
+itsvertical activity <file> --until <date>       # Events until a date
+itsvertical activity <file> --limit <n>          # Most recent N commits
+```
+
+JSON shape: `{ available: true, events: ActivityEvent[] }` on success, or `{ available: false, reason }` if the file isn't in a git repo or git isn't installed. The exit code is non-zero in the unavailable case (text mode).
+
+Event kinds: `project-created`, `project-renamed`, `slice-named`, `slice-renamed`, `slice-unnamed`, `task-added`, `task-removed`, `task-completed`, `task-uncompleted`, `task-renamed`, `task-moved`, `layer-closed`, `layer-reopened`, `layer-renamed`. Sorting-only and notesHtml-only changes are intentionally not emitted.
+
 ## Common Patterns
 
 ### Set up a project with named boxes

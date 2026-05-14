@@ -105,6 +105,21 @@ itsvertical history add <file>                 # Manually add a board to history
 itsvertical history remove <name-or-file>      # Remove a board from history
 ```
 
+### Activity
+
+If the `.vertical` file is tracked in a git repository, Vertical can reconstruct a per-commit activity timeline by diffing the file across its history (who marked which task done, who closed which layer, etc.).
+
+```
+itsvertical activity <file>                    # Print the activity timeline
+itsvertical activity <file> --json             # Output as JSON
+itsvertical activity <file> --author <name>    # Filter by author
+itsvertical activity <file> --since 2026-01-01 # Events since a date
+itsvertical activity <file> --until 2026-12-31 # Events until a date
+itsvertical activity <file> --limit 20         # Limit to the N most recent commits
+```
+
+The browser UI shows the same timeline under the **Activity** button in the navbar. The button is hidden automatically when the file isn't in a git repo (or git isn't installed).
+
 ### Browser UI
 
 `itsvertical open` (or just `itsvertical <file>`) starts a local server and opens the board in your browser. Changes are saved automatically.
@@ -159,13 +174,13 @@ The package has two parts:
 - **SPA** (`app/`) — A React app built with Vite. The board UI. Built to `dist/`.
 - **CLI** (`cli/`) — A Node.js CLI built with tsup. Starts a local HTTP server that serves the SPA and provides a read/write API for the `.vertical` file. Built to `cli/dist/`.
 
-The CLI and SPA share code: types (`app/state/types.ts`), serialization (`app/file/format.ts`), and project creation (`app/state/initial-state.ts`).
+The CLI and SPA share code: types (`app/state/types.ts`), serialization (`app/file/format.ts`), project creation (`app/state/initial-state.ts`), and activity-event types (`app/file/activity-types.ts`). The activity diff engine itself (`cli/activity.ts`) lives only on the CLI side since it shells out to git.
 
 ### State management
 
 The SPA uses `useReducer` + React Context instead of a server. All mutations are synchronous dispatches — no loaders, no fetchers, no optimistic updates needed. The reducer is at `app/state/reducer.ts`.
 
-On mount, the SPA fetches `GET /api/project` from the CLI server. On save, it posts `POST /api/project`. That's the entire API surface.
+On mount, the SPA fetches `GET /api/project` from the CLI server. On save, it posts `POST /api/project`. The Activity view additionally calls `GET /api/activity`, which returns `{ available, events }` or `{ available: false, reason }` if the file isn't in a git repo. That's the entire API surface.
 
 ### Build
 
