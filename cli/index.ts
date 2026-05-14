@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { Command } from 'commander'
 import { serialize } from '~/file/format'
 import { createBlankProject } from '~/state/initial-state'
+import { getActivity } from './activity.js'
 import {
   applyAction,
   fail,
@@ -15,6 +16,7 @@ import {
 import { showBoardGrid, showSummaryTable } from './board.js'
 import { forgetBoard, loadHistory, recordBoard } from './history.js'
 import { startServer } from './server.js'
+import { showActivity } from './show-activity.js'
 import { showBoard, showBoardJson } from './show.js'
 import {
   checkAndUpdate,
@@ -135,6 +137,49 @@ program
       } else {
         showBoard(state, options.box)
       }
+    }
+  )
+
+program
+  .command('activity')
+  .description('Show the activity timeline reconstructed from git history')
+  .argument('<file>', 'Path to the .vertical file')
+  .option('--json', 'Output as JSON')
+  .option('--author <name>', 'Filter by author (passed to git log)')
+  .option('--since <date>', 'Show events since this date (passed to git log)')
+  .option('--until <date>', 'Show events until this date (passed to git log)')
+  .option('--limit <n>', 'Limit to the N most recent commits', (value) =>
+    Number.parseInt(value, 10)
+  )
+  .action(
+    (
+      file: string,
+      options: JsonOption & {
+        author?: string
+        since?: string
+        until?: string
+        limit?: number
+      }
+    ) => {
+      const filePath = resolveFilePath(file, options.json)
+      const result = getActivity(filePath, {
+        author: options.author,
+        since: options.since,
+        until: options.until,
+        limit: options.limit,
+      })
+
+      if (options.json) {
+        console.log(JSON.stringify(result, null, 2))
+        return
+      }
+
+      if (!result.available) {
+        console.error(`Activity unavailable: ${result.reason}`)
+        process.exit(1)
+      }
+
+      showActivity(result.events, filePath)
     }
   )
 

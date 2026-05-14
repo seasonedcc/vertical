@@ -9,15 +9,16 @@ The project has two parts:
 - **SPA** (`app/`) — React app built with Vite. The board UI. Built to `dist/`.
 - **CLI** (`cli/`) — Node.js CLI built with tsup. Provides commands for managing `.vertical` files and a local HTTP server for the browser UI. Built to `cli/dist/`.
 
-The CLI and SPA share code: types (`app/state/types.ts`), serialization (`app/file/format.ts`), project creation (`app/state/initial-state.ts`), and the reducer (`app/state/reducer.ts`).
+The CLI and SPA share code: types (`app/state/types.ts`), serialization (`app/file/format.ts`), project creation (`app/state/initial-state.ts`), the reducer (`app/state/reducer.ts`), and activity event types (`app/file/activity-types.ts`).
 
 ### State management
 
 The SPA uses `useReducer` + React Context. All mutations are synchronous dispatches — no loaders, no fetchers, no optimistic updates. The reducer at `app/state/reducer.ts` is the single source of truth for all business logic, used by both the SPA and the CLI.
 
-The browser UI communicates with the CLI server via two endpoints:
+The browser UI communicates with the CLI server via these endpoints:
 - `GET /api/project` — load the `.vertical` file
 - `POST /api/project` — save back to the file
+- `GET /api/activity` — reconstruct an activity timeline from git history of the file. Returns `{ available: true, events }` or `{ available: false, reason }` when the file isn't in a git repo. The web app uses this both to render the Activity view and to decide whether to show the Activity button in the navbar (it's hidden when unavailable).
 
 ### CLI structure
 
@@ -26,6 +27,8 @@ The browser UI communicates with the CLI server via two endpoints:
 - `cli/apply.ts` — shared helpers: load, save, apply reducer action, output formatting
 - `cli/history.ts` — board history (`~/.vertical/history.json`) for tracking known boards
 - `cli/show.ts` — human-readable and JSON board display
+- `cli/activity.ts` — reconstructs activity events from git history by diffing the .vertical file across commits. Used by both the `activity` CLI command and `GET /api/activity`. Returns `{ available, events }` or `{ available: false, reason }`.
+- `cli/show-activity.ts` — colorized terminal renderer for activity events
 
 All CLI commands follow the same pattern: read file → deserialize → apply reducer action → serialize → write file. The `applyAction` helper in `cli/apply.ts` encapsulates this.
 

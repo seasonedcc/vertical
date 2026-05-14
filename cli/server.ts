@@ -5,6 +5,7 @@ import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
 import getPort from 'get-port'
 import open from 'open'
+import { getActivity } from './activity.js'
 
 const MIME_TYPES: Record<string, string> = {
   '.html': 'text/html',
@@ -102,6 +103,13 @@ async function startServer(filePath: string, options: ServerOptions = {}) {
       fs.writeFileSync(absoluteFilePath, body)
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end('{"ok":true}')
+      return
+    }
+
+    if (url === '/api/activity' && req.method === 'GET') {
+      const result = getActivity(absoluteFilePath)
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify(result))
       return
     }
 
