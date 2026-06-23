@@ -1,0 +1,32 @@
+spec:
+  name: vertical
+  services:
+    - name: web
+      dockerfile_path: Dockerfile
+      source_dir: /
+      github:
+        repo: seasonedcc/vertical
+        branch: main
+        deploy_on_push: true
+      http_port: 8080
+      instance_count: 1
+      instance_size_slug: apps-s-1vcpu-0.5gb
+      health_check:
+        http_path: /api/config
+      envs:
+        - key: PUBLIC_URL
+          scope: RUN_TIME
+          value: ${APP_URL}
+        - key: VERTICAL_GITHUB_REPO
+          scope: RUN_TIME
+          type: GENERAL
+        - key: VERTICAL_GITHUB_TOKEN
+          scope: RUN_TIME
+          type: SECRET
+        - key: VERTICAL_WEBHOOK_SECRET
+          scope: RUN_TIME
+          type: SECRET
+        - key: VERTICAL_GITHUB_BRANCH
+          scope: RUN_TIME
+          type: GENERAL
+          value: ""

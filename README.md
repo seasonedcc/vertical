@@ -22,6 +22,40 @@ Each slice is a box on the board. Add tasks to a box, and split it into layers w
 
 Everything is saved to a single `.vertical` file. Version it with git, share it with teammates, or let your agent manage it.
 
+## Self-host the web app
+
+Want a shared board your whole team can open with a link — no installs, no accounts? Deploy Vertical to [DigitalOcean App Platform](https://www.digitalocean.com/products/app-platform). A GitHub repo holds your `.vertical` files and is the single source of truth; the app is a multi-board workspace over that repo, and every edit is committed straight back to git.
+
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/seasonedcc/vertical/tree/main)
+
+### Setup
+
+1. **Create a repo for your boards** (it can be private, and can start empty). Create boards from the workspace UI or commit `.vertical` files directly — Vertical scans the whole repo recursively for `*.vertical` files.
+2. **Create a fine-grained GitHub personal access token** scoped to that repo with these permissions:
+   - **Contents: Read and write** — read and commit `.vertical` files
+   - **Webhooks: Read and write** — register the push webhook that drives live updates
+   - **Metadata: Read-only** — required, granted automatically
+
+   Do **not** grant Administration.
+3. **Pick a webhook secret** — any random string. It signs incoming webhook deliveries.
+4. **Click the button above** and fill in the prompted variables:
+
+   | Variable | Required | Description |
+   |----------|----------|-------------|
+   | `VERTICAL_GITHUB_REPO` | yes | `owner/repo` of your boards repo |
+   | `VERTICAL_GITHUB_TOKEN` | yes | the fine-grained PAT (stored as a secret) |
+   | `VERTICAL_WEBHOOK_SECRET` | yes | your webhook secret (stored as a secret) |
+   | `VERTICAL_GITHUB_BRANCH` | no | branch to use (defaults to the repo's default branch) |
+
+On boot the app registers a push webhook against its own public URL, so changes — whether made in the browser, committed from git, or written by the CLI — show up live for everyone with the link.
+
+### Notes
+
+- **Access is open.** v1 has no authentication — anyone with the URL can view and edit. Git history is your audit log and undo button. Keep the app URL private or put it behind your own access layer.
+- **One instance.** The app runs with `instance_count: 1` (the template sets this). Live updates and webhook handling are in-memory and don't span replicas.
+- **The Vertical repo stays public.** The Deploy button needs a public template repo — that's the _app_ repo (`seasonedcc/vertical`). Your _boards_ repo, supplied via `VERTICAL_GITHUB_REPO`, can be private.
+- **No database.** All state lives in your GitHub repo.
+
 ## Install
 
 ```
@@ -53,7 +87,8 @@ All entities are addressed by ID. Use `itsvertical show` to see IDs. Every comma
 ```
 itsvertical <file>                              # Shorthand for "open"
 itsvertical new <path> <name>                   # Create a new .vertical file
-itsvertical open <file>                         # Open in the browser UI
+itsvertical open <file>                         # Open a board in the browser UI
+itsvertical open <dir>                          # Open a workspace over a folder of boards
 itsvertical show <file>                         # Print the board to the terminal
 itsvertical show <file> --json                  # Output the board as JSON
 itsvertical show <file> --box <slice-id>        # Show only a specific box
@@ -107,7 +142,7 @@ itsvertical history remove <name-or-file>      # Remove a board from history
 
 ### Browser UI
 
-`itsvertical open` (or just `itsvertical <file>`) starts a local server and opens the board in your browser. Changes are saved automatically.
+`itsvertical open` (or just `itsvertical <file>`) starts a local server and opens the board in your browser. Changes are saved automatically. Point it at a folder (`itsvertical open <dir>`) to get a multi-board workspace over every `.vertical` file inside — the same workspace the [self-hosted web app](#self-host-the-web-app) serves.
 
 ## The board
 
@@ -159,13 +194,17 @@ The package has two parts:
 - **SPA** (`app/`) — A React app built with Vite. The board UI. Built to `dist/`.
 - **CLI** (`cli/`) — A Node.js CLI built with tsup. Starts a local HTTP server that serves the SPA and provides a read/write API for the `.vertical` file. Built to `cli/dist/`.
 
-The CLI and SPA share code: types (`app/state/types.ts`), serialization (`app/file/format.ts`), and project creation (`app/state/initial-state.ts`).
+The CLI and SPA share code: types (`app/state/types.ts`), serialization (`app/file/format.ts`), project creation (`app/state/initial-state.ts`), the reducer (`app/state/reducer.ts`), and conflict detection (`app/state/conflict.ts`).
+
+### Storage adapters
+
+The server speaks one protocol — list boards, load a board, apply an action, subscribe to changes — implemented by two storage adapters (`cli/adapters/`): a **local** adapter over a directory (`fs.watch` for live updates, content hash for revisions) and a **GitHub** adapter over a repo (push webhook for live updates, blob sha for revisions). The SPA is backend-agnostic; the same workspace UI runs on both.
 
 ### State management
 
-The SPA uses `useReducer` + React Context instead of a server. All mutations are synchronous dispatches — no loaders, no fetchers, no optimistic updates needed. The reducer is at `app/state/reducer.ts`.
+The board view uses `useReducer` + React Context for optimistic local state. Writes are **action-based and server-authoritative**: the browser sends the reducer action (not the whole file) to `POST /api/projects/:id/actions`, and the server applies it against the latest state via the shared reducer. Concurrent edits are detected with an entity-level, field-scoped diff (`app/state/conflict.ts`) and **rejected, not overwritten** — the browser rolls back, reloads, and shows a toast. Live updates arrive over SSE (`GET /api/events`) carrying `{ boardId, revision }`. The sync state machine lives at `app/sync/sync-reducer.ts`.
 
-On mount, the SPA fetches `GET /api/project` from the CLI server. On save, it posts `POST /api/project`. That's the entire API surface.
+The HTTP surface: `GET /api/projects` (list), `GET/PATCH/DELETE /api/projects/:id`, `POST /api/projects` (create), `POST /api/projects/:id/actions` (apply), `GET /api/events` (SSE), and `POST /api/webhook/github` (GitHub adapter only).
 
 ### Build
 

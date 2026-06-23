@@ -1,0 +1,11 @@
+node_modules
+dist
+cli/dist
+.git
+.github
+*.vertical
+*.log
+.DS_Store
+.vscode
+.idea
+coverage
