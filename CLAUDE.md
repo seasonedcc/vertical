@@ -13,21 +13,27 @@ The CLI and SPA share code: types (`app/state/types.ts`), serialization (`app/fi
 
 ### State management
 
-The SPA uses `useReducer` + React Context. All mutations are synchronous dispatches — no loaders, no fetchers, no optimistic updates. The reducer at `app/state/reducer.ts` is the single source of truth for all business logic, used by both the SPA and the CLI.
+The board view uses `useReducer` + React Context for optimistic local state. The reducer at `app/state/reducer.ts` is the single source of truth for all business logic, used by the SPA, the server, and the CLI.
 
-The browser UI communicates with the CLI server via two endpoints:
-- `GET /api/project` — load the `.vertical` file
-- `POST /api/project` — save back to the file
+Writes from the browser are **action-based and server-authoritative**: the SPA sends the reducer action (not the whole file) to the server, which applies it against the latest state. Concurrent edits are detected by an entity-level, field-scoped diff (`app/state/conflict.ts`) and **rejected, not overwritten**. The client-side sync state machine is `app/sync/sync-reducer.ts` (single-flight, coalescing, own-echo dedup, reconcile-on-drain). Live updates arrive over SSE.
+
+The web server speaks one protocol — list boards, load a board, apply an action, subscribe to changes — implemented by two storage adapters in `cli/adapters/`:
+- `local.ts` — a directory of `.vertical` files; `fs.watch` for live updates; revision = content hash
+- `github.ts` — a GitHub repo; push webhook for live updates; revision = blob sha
+
+The HTTP surface: `GET /api/projects` (list), `GET/PATCH/DELETE /api/projects/:id`, `POST /api/projects` (create), `POST /api/projects/:id/actions` (apply), `GET /api/events` (SSE, `{ boardId, revision }`), `GET /api/config`, and `POST /api/webhook/github` (GitHub adapter only).
 
 ### CLI structure
 
 - `cli/index.ts` — commander-based entry point with all commands
-- `cli/server.ts` — HTTP server (static file serving + API)
-- `cli/apply.ts` — shared helpers: load, save, apply reducer action, output formatting
+- `cli/serve.ts` — selects the storage adapter from env (GitHub when `VERTICAL_GITHUB_REPO` is set, else local) and starts the server; the Docker entrypoint
+- `cli/server.ts` — HTTP server (static file serving + adapter-backed API + SSE)
+- `cli/adapters/` — `types.ts` (the `StorageAdapter` interface + shared `applyActionWith` conflict logic), `local.ts`, `github.ts`
+- `cli/apply.ts` — shared helpers for the file-based CLI subcommands: load, save, apply reducer action, output formatting
 - `cli/history.ts` — board history (`~/.vertical/history.json`) for tracking known boards
 - `cli/show.ts` — human-readable and JSON board display
 
-All CLI commands follow the same pattern: read file → deserialize → apply reducer action → serialize → write file. The `applyAction` helper in `cli/apply.ts` encapsulates this.
+The CLI mutation subcommands (`task add`, etc.) stay file-based one-shots via `cli/apply.ts`: read file → deserialize → apply reducer action → serialize → write file. Only the server + SPA use the adapter/action protocol; the reducer and serialization are the shared core for all paths.
 
 ### Board history
 

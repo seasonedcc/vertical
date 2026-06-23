@@ -1,18 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import {
-  fetchProject,
-  reportDirty,
-  saveProject,
-  subscribeToServer,
-} from '~/file/api'
+import { Link } from 'react-router-dom'
 import logo from '~/images/logo.png'
 import { cx, usePlaceCursorOnClickedPosition } from '~/lib/utils'
 import {
   useBoardDispatch,
   useBoardState,
-  useIsDirty,
-  useMarkClean,
+  useBoardSyncStatus,
 } from '~/state/context'
 import { useProjectMode } from './project-mode'
 
@@ -130,66 +124,18 @@ function Layout({
   children: React.ReactNode
 }) {
   const state = useBoardState()
-  const dispatch = useBoardDispatch()
-  const isDirty = useIsDirty()
-  const markClean = useMarkClean()
+  const { syncing, conflict, disconnected } = useBoardSyncStatus()
   const { projectMode, setProjectMode } = useProjectMode()
-  const [disconnected, setDisconnected] = useState(false)
-  const dirtyRef = useRef(false)
-
-  const handleSave = async () => {
-    await saveProject(state)
-    markClean()
-  }
+  const [showConflict, setShowConflict] = useState(false)
+  const prevConflict = useRef(conflict)
 
   useEffect(() => {
-    const handleKeydown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 's') {
-        event.preventDefault()
-        handleSave()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeydown)
-    return () => window.removeEventListener('keydown', handleKeydown)
-  }, [state])
-
-  const dirty = isDirty()
-  dirtyRef.current = dirty
-
-  useEffect(() => {
-    reportDirty(dirty)
-  }, [dirty])
-
-  useEffect(() => {
-    if (!dirty) return
-    const timer = setTimeout(() => {
-      saveProject(state).then(markClean)
-    }, 1000)
+    if (conflict === prevConflict.current) return
+    prevConflict.current = conflict
+    setShowConflict(true)
+    const timer = setTimeout(() => setShowConflict(false), 4000)
     return () => clearTimeout(timer)
-  }, [dirty, state])
-
-  useEffect(() => {
-    return subscribeToServer(
-      async () => {
-        if (dirtyRef.current) return
-        const newState = await fetchProject()
-        dispatch({ type: 'LOAD_STATE', state: newState })
-      },
-      () => setDisconnected(true)
-    )
-  }, [])
-
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (dirty) {
-        event.preventDefault()
-      }
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [dirty])
+  }, [conflict])
 
   if (disconnected) {
     return (
@@ -200,11 +146,6 @@ function Layout({
         <img src={logo} alt="Vertical" className="max-w-12" />
         <h1 className="font-bold text-xl">Disconnected</h1>
         <p className="text-base-content/50">The Vertical server has stopped.</p>
-        {dirty && (
-          <p className="text-sm text-warning">
-            You have unsaved changes that may be lost.
-          </p>
-        )}
       </div>
     )
   }
@@ -221,14 +162,18 @@ function Layout({
         data-theme="dark"
         className="navbar sticky top-0 z-10 gap-2 bg-(--dark-bg) px-4 lg:px-6"
       >
-        <div className="flex shrink-0 items-center">
+        <Link
+          to="/"
+          aria-label="All projects"
+          className="flex shrink-0 items-center"
+        >
           <img src={logo} alt="Vertical" className="max-w-8" />
-        </div>
+        </Link>
         <EditableProjectName name={state.project.name} />
         <span
           className={cx(
             'flex items-center gap-1 text-accent text-xs',
-            !dirty && 'invisible'
+            !syncing && 'invisible'
           )}
         >
           ● Saving...
@@ -250,6 +195,16 @@ function Layout({
         </ul>
       </div>
       {children}
+      {showConflict && (
+        <div className="toast toast-end toast-bottom z-50">
+          <div className="alert alert-warning">
+            <span>
+              Your change conflicted with a newer edit. Reloaded the latest
+              version.
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

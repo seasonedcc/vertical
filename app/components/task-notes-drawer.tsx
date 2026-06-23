@@ -9,7 +9,11 @@ import {
 } from 'react'
 import { cx } from '~/lib/utils'
 import { RichTextEditor } from '~/rich-text-editor'
-import { useBoardDispatch, useBoardState, useIsDirty } from '~/state/context'
+import {
+  useBoardDispatch,
+  useBoardState,
+  useBoardSyncStatus,
+} from '~/state/context'
 import type { Task } from '~/state/types'
 
 type TaskNotesContextValue = {
@@ -52,7 +56,7 @@ function TaskNotesDrawer() {
   const { openTaskId, closeNotes } = useTaskNotes()
   const state = useBoardState()
   const dispatch = useBoardDispatch()
-  const isDirty = useIsDirty()
+  const { syncing } = useBoardSyncStatus()
   const dialogRef = useRef<HTMLDivElement>(null)
   const [uiState, setUIState] = useState<'editing' | 'closing'>('editing')
 
@@ -129,7 +133,7 @@ function TaskNotesDrawer() {
                   }}
                   className="max-h-[74vh]"
                 />
-                {isDirty() && (
+                {syncing && (
                   <div className="ml-auto flex items-center gap-1 text-base-content/60 text-xs">
                     Saving...
                   </div>

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { Command } from 'commander'
 import { serialize } from '~/file/format'
 import { createBlankProject } from '~/state/initial-state'
+import { createLocalAdapter } from './adapters/local.js'
 import {
   applyAction,
   fail,
@@ -14,6 +15,7 @@ import {
 } from './apply.js'
 import { showBoardGrid, showSummaryTable } from './board.js'
 import { forgetBoard, loadHistory, recordBoard } from './history.js'
+import { runServe } from './serve.js'
 import { startServer } from './server.js'
 import { showBoard, showBoardJson } from './show.js'
 import {
@@ -81,19 +83,41 @@ program
 
 program
   .command('open')
-  .description('Open an existing .vertical file in the browser')
-  .argument('<file>', 'Path to the .vertical file')
-  .action(async (file: string) => {
-    const filePath = resolveFilePath(file)
-    const state = loadState(filePath)
+  .description('Open a .vertical file or a directory of boards in the browser')
+  .argument('<path>', 'Path to a .vertical file or a directory')
+  .action(async (target: string) => {
+    const resolved = path.resolve(target)
+    if (!fs.existsSync(resolved)) {
+      fail(`Path not found: ${resolved}`)
+    }
+
+    if (fs.statSync(resolved).isDirectory()) {
+      const adapter = createLocalAdapter(resolved)
+      await startServer(adapter, {
+        open: true,
+        openPath: '/',
+        label: `Workspace: ${resolved}`,
+        config: { adapter: 'local', root: resolved },
+      })
+      return
+    }
+
+    const root = path.dirname(resolved)
+    const id = path.basename(resolved)
+    const state = loadState(resolved)
     try {
-      recordBoard(state.project.name, filePath)
+      recordBoard(state.project.name, resolved)
     } catch (error) {
       console.warn(
         `Warning: could not track board: ${(error as Error).message}`
       )
     }
-    await startServer(filePath)
+    await startServer(createLocalAdapter(root), {
+      open: true,
+      openPath: `/projects/${encodeURIComponent(id)}`,
+      label: `Editing: ${resolved}`,
+      config: { adapter: 'local', root },
+    })
   })
 
 program
@@ -102,7 +126,21 @@ program
   .argument('<file>', 'Path to the .vertical file')
   .action(async (file: string) => {
     const filePath = resolveFilePath(file)
-    await startServer(filePath, { port: 3456, open: false })
+    const root = path.dirname(filePath)
+    await startServer(createLocalAdapter(root), {
+      port: 3456,
+      open: false,
+      label: `Editing: ${filePath}`,
+      config: { adapter: 'local', root },
+    })
+  })
+
+program
+  .command('serve')
+  .description('Run the multi-board server (for self-hosting)')
+  .argument('[dir]', 'Directory of .vertical files (defaults to cwd)')
+  .action(async (dir?: string) => {
+    await runServe(dir)
   })
 
 program

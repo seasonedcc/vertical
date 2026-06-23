@@ -1,55 +1,41 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useReducer,
-  useState,
-} from 'react'
-import { serialize } from '~/file/format'
+import { createContext, useContext } from 'react'
+import type { LoadedBoard } from '~/file/api'
+import { useBoardSync } from '~/sync/use-board-sync'
 import type { BoardAction } from './actions'
-import { boardReducer } from './reducer'
 import type { BoardState } from './types'
+
+type BoardSyncStatus = {
+  syncing: boolean
+  conflict: number
+  disconnected: boolean
+}
 
 type BoardContextValue = {
   state: BoardState
   dispatch: (action: BoardAction) => void
-  isDirty: () => boolean
-  markClean: () => void
+  status: BoardSyncStatus
 }
 
 const BoardContext = createContext<BoardContextValue | undefined>(undefined)
 
 function BoardProvider({
-  initialState,
+  boardId,
+  initialBoard,
   children,
 }: {
-  initialState: BoardState
+  boardId: string
+  initialBoard: LoadedBoard
   children: React.ReactNode
 }) {
-  const [state, rawDispatch] = useReducer(boardReducer, initialState)
-  const [savedSnapshot, setSavedSnapshot] = useState(() =>
-    serialize(initialState)
+  const { state, dispatch, syncing, conflict, disconnected } = useBoardSync(
+    boardId,
+    initialBoard
   )
-
-  const dispatch = useCallback((action: BoardAction) => {
-    rawDispatch(action)
-    if (action.type === 'LOAD_STATE') {
-      setSavedSnapshot(serialize(action.state))
-    }
-  }, [])
-
-  const currentSnapshot = useMemo(() => serialize(state), [state])
-  const isDirty = useCallback(
-    () => currentSnapshot !== savedSnapshot,
-    [currentSnapshot, savedSnapshot]
-  )
-  const markClean = useCallback(() => {
-    setSavedSnapshot(currentSnapshot)
-  }, [currentSnapshot])
 
   return (
-    <BoardContext.Provider value={{ state, dispatch, isDirty, markClean }}>
+    <BoardContext.Provider
+      value={{ state, dispatch, status: { syncing, conflict, disconnected } }}
+    >
       {children}
     </BoardContext.Provider>
   )
@@ -69,23 +55,11 @@ function useBoardDispatch() {
   return context.dispatch
 }
 
-function useIsDirty() {
-  const context = useContext(BoardContext)
-  if (!context) throw new Error('useIsDirty must be used within BoardProvider')
-  return context.isDirty
-}
-
-function useMarkClean() {
+function useBoardSyncStatus() {
   const context = useContext(BoardContext)
   if (!context)
-    throw new Error('useMarkClean must be used within BoardProvider')
-  return context.markClean
+    throw new Error('useBoardSyncStatus must be used within BoardProvider')
+  return context.status
 }
 
-export {
-  BoardProvider,
-  useBoardDispatch,
-  useBoardState,
-  useIsDirty,
-  useMarkClean,
-}
+export { BoardProvider, useBoardDispatch, useBoardState, useBoardSyncStatus }
