@@ -48,6 +48,12 @@ const packageJson: { version: string } = JSON.parse(
 
 type JsonOption = { json?: boolean; brief?: boolean }
 
+function requireTask(filePath: string, taskId: string, json?: boolean) {
+  if (!loadState(filePath).tasks.some((t) => t.id === taskId)) {
+    fail(`Task not found: ${taskId}`, json)
+  }
+}
+
 const program = new Command()
 
 program
@@ -452,6 +458,7 @@ task
   .option('--json', 'Output as JSON')
   .action((file: string, taskId: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
+    requireTask(filePath, taskId, options.json)
     const state = applyAction(filePath, {
       type: 'SET_TASK_DONE',
       taskId,
@@ -468,6 +475,7 @@ task
   .option('--json', 'Output as JSON')
   .action((file: string, taskId: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
+    requireTask(filePath, taskId, options.json)
     const state = applyAction(filePath, {
       type: 'SET_TASK_DONE',
       taskId,
@@ -485,6 +493,7 @@ task
   .option('--json', 'Output as JSON')
   .action((file: string, taskId: string, name: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
+    requireTask(filePath, taskId, options.json)
     const state = applyAction(filePath, {
       type: 'RENAME_TASK',
       taskId,
@@ -501,6 +510,7 @@ task
   .option('--json', 'Output as JSON')
   .action((file: string, taskId: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
+    requireTask(filePath, taskId, options.json)
     const state = applyAction(filePath, { type: 'DELETE_TASK', taskId })
     output(state, options, `Task deleted (id: ${taskId})`, taskId)
   })
@@ -520,6 +530,7 @@ task
       options: JsonOption
     ) => {
       const filePath = resolveFilePath(file, options.json)
+      requireTask(filePath, taskId, options.json)
       const current = loadState(filePath)
 
       const layerTasks = current.tasks
@@ -555,6 +566,7 @@ task
       options: JsonOption & { set?: string; clear?: boolean }
     ) => {
       const filePath = resolveFilePath(file, options.json)
+      requireTask(filePath, taskId, options.json)
 
       if (options.set !== undefined) {
         const state = applyAction(filePath, {
@@ -686,6 +698,7 @@ task
   .action(
     (file: string, taskId: string, label: string, options: JsonOption) => {
       const filePath = resolveFilePath(file, options.json)
+      requireTask(filePath, taskId, options.json)
       const state = applyAction(filePath, {
         type: 'REMOVE_TASK_LINK',
         taskId,
