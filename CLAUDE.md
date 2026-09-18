@@ -17,7 +17,7 @@ The SPA uses `useReducer` + React Context. All mutations are synchronous dispatc
 
 The browser UI communicates with the CLI server via two endpoints:
 - `GET /api/project` — load the `.vertical` file
-- `POST /api/project` — save back to the file
+- `POST /api/actions` — apply a list of reducer actions to the file under a lock and return the new state. The browser never posts the whole board, so its saves merge with changes the CLI made in the meantime. With `open --inbox`, tasks those actions edited are flagged `needsPickup`.
 
 ### CLI structure
 
@@ -26,8 +26,12 @@ The browser UI communicates with the CLI server via two endpoints:
 - `cli/apply.ts` — shared helpers: load, save, apply reducer action, output formatting
 - `cli/history.ts` — board history (`~/.vertical/history.json`) for tracking known boards
 - `cli/show.ts` — human-readable and JSON board display
+- `cli/summary.ts` — compact counts per box and layer for `show --summary`
+- `cli/plan.ts` — parses a plan file and fills empty boxes for `apply`
+- `cli/validate.ts` — consistency checks for statuses and blockers
+- `cli/inbox.ts` — flags tasks edited in the browser and lists them
 
-All CLI commands follow the same pattern: read file → deserialize → apply reducer action → serialize → write file. The `applyAction` helper in `cli/apply.ts` encapsulates this.
+All CLI commands follow the same pattern: read file → deserialize → apply reducer action → serialize → write file. The `applyAction` helper in `cli/apply.ts` encapsulates this. Every write goes through `updateState`, which takes a `<file>.lock` lock and replaces the file with an atomic rename, so the CLI and the server can write concurrently.
 
 ### Board history
 
@@ -112,6 +116,7 @@ The CLI is designed for AI agents as the primary user:
 - **IDs everywhere**: all entities (slices, layers, tasks) are addressed by UUID
 - **All output includes IDs**: `itsvertical show` prints IDs for every entity
 - **`--json` on every command**: outputs the full board state as JSON after any mutation
+- **`--brief` with `--json`**: outputs `{ ok, id }` instead of the whole board, so a mutation costs an agent almost no context
 - **JSON errors**: when `--json` is passed, errors output `{"error": "..."}` instead of plain text
 - **Deterministic**: same input, same output. No prompts, no interactivity.
 
@@ -120,7 +125,7 @@ The CLI is designed for AI agents as the primary user:
 - **Project**: `{ id, name }` — the top-level entity
 - **Slices** (boxes): `{ id, projectId, boxNumber (1-9), name }` — each box is a vertical slice of work
 - **Layers**: `{ id, sliceId, name, sorting, status }` — steps within a box (can be split/merged)
-- **Tasks**: `{ id, projectId, layerId, name, sorting, done, notesHtml }` — work items within a layer. `notesHtml` is rich text (HTML string or null).
+- **Tasks**: `{ id, projectId, layerId, name, sorting, done, notesHtml, status, statusReason, assignee, blockedBy, links, needsPickup }` — work items within a layer. `notesHtml` is rich text (HTML string or null). `status` is `active`, `failed`, `blocked` or null, and is separate from `done`: marking a task done clears its status and releases the tasks it blocked. `links` are `{ label, target }` pairs. `needsPickup` marks a task edited in the browser under `open --inbox`. Files written before these fields existed load with the defaults.
 
 ## Definition of Done
 
