@@ -58,6 +58,16 @@ itsvertical show <file>                         # Print the board to the termina
 itsvertical show <file> --json                  # Output the board as JSON
 itsvertical show <file> --box <slice-id>        # Show only a specific box
 itsvertical show <file> --visual               # Show the board as a visual 3x3 grid with summary
+itsvertical show <file> --summary              # Counts per box and layer in a few lines
+itsvertical apply <file> <plan.json>           # Fill empty boxes from a plan in one call
+itsvertical validate <file>                    # Check statuses and blockers, exit 1 on problems
+itsvertical migrate <file>                     # Upgrade an older file to the current file version
+itsvertical migrate <file> --check             # Only say whether it needs it (exit 1 if so)
+itsvertical inbox <file>                       # Tasks edited in the browser, not yet acknowledged
+itsvertical log <file>                         # The record of changes: when, who, what
+itsvertical log <file> --since <iso-time>      # Only what changed after a moment
+itsvertical open <file> --read-only            # Serve the board for viewing only
+itsvertical new <path> <name> --no-track       # Create a board without recording it in the history
 itsvertical rename <file> <name>                # Rename the project
 ```
 
@@ -74,6 +84,13 @@ itsvertical task move <file> <task-id> <layer>  # Move a task to another layer
 itsvertical task notes <file> <task-id>        # Print task notes
 itsvertical task notes <file> <tid> --set <html>  # Set notes (HTML)
 itsvertical task notes <file> <task-id> --clear   # Clear notes
+itsvertical task status <file> <tid> active --by <who>      # Someone is working on it
+itsvertical task status <file> <tid> failed --reason <text> # It failed, and why
+itsvertical task status <file> <tid> blocked --on <tid...>  # It waits on other tasks
+itsvertical task status <file> <tid> none        # Clear the status
+itsvertical task link <file> <tid> <label> <target>  # Attach a link (PR, verdict, doc)
+itsvertical task unlink <file> <tid> <label>     # Remove a link
+itsvertical task ack <file> <tid>                # Acknowledge a task edited in the browser
 ```
 
 ### Boxes
@@ -104,6 +121,39 @@ itsvertical history list                       # List all known boards
 itsvertical history add <file>                 # Manually add a board to history
 itsvertical history remove <name-or-file>      # Remove a board from history
 ```
+
+### Working alongside an agent
+
+A task is done or not, and it can also be `active`, `failed` or `blocked`. Marking a task done clears its status and unblocks the tasks that were waiting on it. Links carry a label and a target, so a task can point at its pull request or at a file.
+
+`apply` fills empty boxes from a plan file, so an agent seeds a whole board in one call:
+
+```json
+{
+  "boxes": [
+    {
+      "box": 1,
+      "name": "Download button",
+      "layers": [
+        { "name": "Build", "tasks": [{ "name": "Button", "key": "button" }] },
+        { "name": "Verify", "tasks": [{ "name": "Walkthrough", "blockedBy": ["button"] }] }
+      ]
+    }
+  ]
+}
+```
+
+A task's `key` only lives in the plan: `blockedBy` refers to it, and the output maps each key to the id it became.
+
+Add `--brief` to `--json` on any command that changes the board and it prints `{ "ok": true, "id": "..." }` instead of the whole board.
+
+The CLI and the browser can write to the same file at the same time. Every write takes a lock and replaces the file atomically, and the browser sends the changes you made, not the whole board, so neither side overwrites the other.
+
+Every change is recorded in the file with its time and its actor. The CLI records `cli` unless you pass `--actor <name>` or set `VERTICAL_ACTOR`, and the browser records `browser`. Read the record with `itsvertical log <file>`, or from the Activity button in the browser.
+
+Open the board with `itsvertical open <file> --read-only` to watch without being able to change anything: the editing controls are off and the server refuses writes.
+
+Open the board with `itsvertical open <file> --inbox` and every task you add or edit in the browser is flagged. The agent reads the flagged tasks with `itsvertical inbox <file>` and clears each one with `itsvertical task ack`.
 
 ### Browser UI
 
@@ -140,13 +190,20 @@ It's just JSON. You can version it with git, share it with teammates, or back it
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "project": { "name": "My Project" },
   "slices": [],
   "layers": [],
-  "tasks": []
+  "tasks": [],
+  "events": []
 }
 ```
+
+### File versions
+
+Files from older releases keep working. Vertical reads a version 1 file as it is, and nothing is written until you change something: the first change saves the file as version 2 and notes the migration in its log. `itsvertical migrate <file>` does the same upgrade on its own and leaves the original beside it as `<file>.v1.backup`.
+
+An older Vertical refuses a version 2 file instead of opening it and dropping what it does not know, so update everyone who shares a board: `itsvertical update`.
 
 ## Development
 

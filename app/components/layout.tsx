@@ -1,19 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import {
-  fetchProject,
-  reportDirty,
-  saveProject,
-  subscribeToServer,
-} from '~/file/api'
+import { fetchProject, reportDirty, subscribeToServer } from '~/file/api'
 import logo from '~/images/logo.png'
 import { cx, usePlaceCursorOnClickedPosition } from '~/lib/utils'
 import {
   useBoardDispatch,
   useBoardState,
   useIsDirty,
-  useMarkClean,
+  useReadOnly,
+  useSavePendingActions,
 } from '~/state/context'
+import { ActivityDrawer } from './activity-drawer'
 import { useProjectMode } from './project-mode'
 
 function EditableProjectName({
@@ -22,6 +19,7 @@ function EditableProjectName({
   name: string
 }) {
   const dispatch = useBoardDispatch()
+  const readOnly = useReadOnly()
   const [editing, setEditing] = useState(false)
   const [height, setHeight] = useState(18)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -103,6 +101,7 @@ function EditableProjectName({
       type="button"
       ref={buttonRef}
       onClick={(event) => {
+        if (readOnly) return
         const buttonHeight = buttonRef.current?.offsetHeight ?? 18
 
         handleClick(event)
@@ -132,15 +131,14 @@ function Layout({
   const state = useBoardState()
   const dispatch = useBoardDispatch()
   const isDirty = useIsDirty()
-  const markClean = useMarkClean()
+  const savePendingActions = useSavePendingActions()
+  const readOnly = useReadOnly()
+  const [activityOpen, setActivityOpen] = useState(false)
   const { projectMode, setProjectMode } = useProjectMode()
   const [disconnected, setDisconnected] = useState(false)
   const dirtyRef = useRef(false)
 
-  const handleSave = async () => {
-    await saveProject(state)
-    markClean()
-  }
+  const handleSave = () => savePendingActions()
 
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {
@@ -164,7 +162,7 @@ function Layout({
   useEffect(() => {
     if (!dirty) return
     const timer = setTimeout(() => {
-      saveProject(state).then(markClean)
+      savePendingActions()
     }, 1000)
     return () => clearTimeout(timer)
   }, [dirty, state])
@@ -233,22 +231,40 @@ function Layout({
         >
           ● Saving...
         </span>
+        {readOnly && (
+          <span className="rounded bg-neutral px-2 py-0.5 text-neutral-content text-xs">
+            Read-only
+          </span>
+        )}
         <ul className="menu menu-horizontal ml-auto shrink-0 flex-nowrap gap-1 px-1">
           <li>
             <button
-              className={cx(
-                'btn btn-neutral btn-sm hidden sm:inline-flex',
-                projectMode === 'split' && 'ring-2 ring-accent'
-              )}
-              onClick={() =>
-                setProjectMode(projectMode === 'split' ? 'default' : 'split')
-              }
+              className="btn btn-neutral btn-sm"
+              onClick={() => setActivityOpen(true)}
             >
-              <span className="text-2xl">✂</span>
+              Activity
             </button>
           </li>
+          {!readOnly && (
+            <li>
+              <button
+                className={cx(
+                  'btn btn-neutral btn-sm hidden sm:inline-flex',
+                  projectMode === 'split' && 'ring-2 ring-accent'
+                )}
+                onClick={() =>
+                  setProjectMode(projectMode === 'split' ? 'default' : 'split')
+                }
+              >
+                <span className="text-2xl">✂</span>
+              </button>
+            </li>
+          )}
         </ul>
       </div>
+      {activityOpen && (
+        <ActivityDrawer onClose={() => setActivityOpen(false)} />
+      )}
       {children}
     </div>
   )

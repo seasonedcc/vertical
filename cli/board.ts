@@ -11,6 +11,7 @@ const ansi = {
   dim: '\x1b[2m',
   green: '\x1b[32m',
   yellow: '\x1b[33m',
+  red: '\x1b[31m',
   cyan: '\x1b[36m',
 }
 
@@ -96,7 +97,7 @@ function buildCellLines(
       lines.push(separator)
     }
 
-    if (hasMultipleLayers) {
+    if (hasMultipleLayers || layer.name) {
       const layerName = layer.name ?? `Layer ${i + 1}`
       if (layer.status === 'done') {
         lines.push(style(`✓ ${layerName} (done)`, ansi.green))
@@ -108,6 +109,12 @@ function buildCellLines(
     for (const task of tasks) {
       if (task.done) {
         lines.push(`  ${style('●', ansi.green)} ${style(task.name, ansi.dim)}`)
+      } else if (task.status === 'active') {
+        lines.push(`  ${style('◐', ansi.cyan)} ${task.name}`)
+      } else if (task.status === 'failed') {
+        lines.push(`  ${style('✗', ansi.red)} ${style(task.name, ansi.red)}`)
+      } else if (task.status === 'blocked') {
+        lines.push(`  ${style('⊘', ansi.yellow)} ${task.name}`)
       } else {
         lines.push(`  ${style('○', ansi.yellow)} ${task.name}`)
       }
@@ -265,6 +272,10 @@ function buildStatusText(state: BoardState, slice: Slice) {
     if (doneLayerNames.length > 0) {
       parts.push(`${doneLayerNames.join(', ')} marked done`)
     }
+    const failedCount = tasks.filter((t) => t.status === 'failed').length
+    const blockedCount = tasks.filter((t) => t.status === 'blocked').length
+    if (failedCount > 0) parts.push(style(`${failedCount} failed`, ansi.red))
+    if (blockedCount > 0) parts.push(`${blockedCount} blocked`)
     if (openCount > 0) {
       parts.push(`${openCount} task${openCount === 1 ? '' : 's'} still open`)
     }

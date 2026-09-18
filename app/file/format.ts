@@ -1,41 +1,53 @@
-import type { BoardState, Task } from '~/state/types'
+import type { BoardEvent, BoardState } from '~/state/types'
+import { CURRENT_VERSION, type RawFile, migrate } from './migrations'
 
 type VerticalFile = {
-  version: 1
+  version: typeof CURRENT_VERSION
   project: BoardState['project']
   slices: BoardState['slices']
   layers: BoardState['layers']
-  tasks: Array<Omit<Task, 'notesHtml'> & { notesHtml?: string | null }>
+  tasks: BoardState['tasks']
+  events: BoardEvent[]
 }
 
-function serialize(state: BoardState): string {
+function serialize(state: BoardState, events: BoardEvent[] = []): string {
   const file: VerticalFile = {
-    version: 1,
+    version: CURRENT_VERSION,
     project: state.project,
     slices: state.slices,
     layers: state.layers,
     tasks: state.tasks,
+    events,
   }
   return JSON.stringify(file, null, 2)
 }
 
-function deserialize(json: string): BoardState {
-  const file = JSON.parse(json) as VerticalFile
+function parse(json: string) {
+  const raw = JSON.parse(json) as RawFile
 
-  if (file.version !== 1) {
-    throw new Error(`Unsupported file version: ${file.version}`)
-  }
-
-  if (!file.project || !file.slices || !file.layers || !file.tasks) {
+  if (!raw.project || !raw.slices || !raw.layers || !raw.tasks) {
     throw new Error('Invalid .vertical file: missing required fields')
   }
 
+  return migrate(raw) as unknown as VerticalFile
+}
+
+function fileVersion(json: string) {
+  return (JSON.parse(json) as RawFile).version
+}
+
+function deserializeEvents(json: string): BoardEvent[] {
+  return parse(json).events
+}
+
+function deserialize(json: string): BoardState {
+  const file = parse(json)
   return {
     project: file.project,
     slices: file.slices,
     layers: file.layers,
-    tasks: file.tasks.map((t) => ({ ...t, notesHtml: t.notesHtml ?? null })),
+    tasks: file.tasks,
   }
 }
 
-export { deserialize, serialize }
+export { deserialize, deserializeEvents, fileVersion, serialize }

@@ -17,7 +17,9 @@ The SPA uses `useReducer` + React Context. All mutations are synchronous dispatc
 
 The browser UI communicates with the CLI server via two endpoints:
 - `GET /api/project` — load the `.vertical` file
-- `POST /api/project` — save back to the file
+- `POST /api/actions` — apply a list of reducer actions to the file under a lock and return the new state. The browser never posts the whole board, so its saves merge with changes the CLI made in the meantime. With `open --inbox`, tasks those actions edited are flagged `needsPickup`. With `open --read-only` it answers 403.
+- `GET /api/mode` — `{ readOnly, inbox }`, read once by the web app on load
+- `GET /api/log` — the file's events, for the Activity drawer
 
 ### CLI structure
 
@@ -26,12 +28,17 @@ The browser UI communicates with the CLI server via two endpoints:
 - `cli/apply.ts` — shared helpers: load, save, apply reducer action, output formatting
 - `cli/history.ts` — board history (`~/.vertical/history.json`) for tracking known boards
 - `cli/show.ts` — human-readable and JSON board display
+- `cli/summary.ts` — compact counts per box and layer for `show --summary`
+- `cli/plan.ts` — parses a plan file and fills empty boxes for `apply`
+- `cli/validate.ts` — consistency checks for statuses and blockers
+- `cli/inbox.ts` — flags tasks edited in the browser and lists them
+- `cli/events.ts` — turns a reducer action into the log entries it caused
 
-All CLI commands follow the same pattern: read file → deserialize → apply reducer action → serialize → write file. The `applyAction` helper in `cli/apply.ts` encapsulates this.
+All CLI commands follow the same pattern: read file → deserialize → apply reducer action → serialize → write file. The `applyAction` helper in `cli/apply.ts` encapsulates this. Every write goes through `updateState`, which takes a `<file>.lock` lock and replaces the file with an atomic rename, so the CLI and the server can write concurrently. `updateState` also appends the change's events to the file's `events` array, stamped with the time and the actor (`--actor`, `VERTICAL_ACTOR`, or `cli`; the server records `browser`). Events live in the file but never in `BoardState`, so `show --json` stays the size of the board.
 
 ### Board history
 
-The `new` and `open` commands automatically track boards in `~/.vertical/history.json`. Use `itsvertical history list` to see all known boards, `itsvertical history add <file>` to manually add a board, and `itsvertical history remove <name-or-file>` to remove one.
+The `new` and `open` commands automatically track boards in `~/.vertical/history.json`, unless `--no-track` is passed. `new` checks the history before it creates the file, so a name clash leaves nothing behind. Use `itsvertical history list` to see all known boards, `itsvertical history add <file>` to manually add a board, and `itsvertical history remove <name-or-file>` to remove one.
 
 ## Essential Commands
 
@@ -112,6 +119,7 @@ The CLI is designed for AI agents as the primary user:
 - **IDs everywhere**: all entities (slices, layers, tasks) are addressed by UUID
 - **All output includes IDs**: `itsvertical show` prints IDs for every entity
 - **`--json` on every command**: outputs the full board state as JSON after any mutation
+- **`--brief` with `--json`**: outputs `{ ok, id }` instead of the whole board, so a mutation costs an agent almost no context
 - **JSON errors**: when `--json` is passed, errors output `{"error": "..."}` instead of plain text
 - **Deterministic**: same input, same output. No prompts, no interactivity.
 
@@ -120,7 +128,13 @@ The CLI is designed for AI agents as the primary user:
 - **Project**: `{ id, name }` — the top-level entity
 - **Slices** (boxes): `{ id, projectId, boxNumber (1-9), name }` — each box is a vertical slice of work
 - **Layers**: `{ id, sliceId, name, sorting, status }` — steps within a box (can be split/merged)
-- **Tasks**: `{ id, projectId, layerId, name, sorting, done, notesHtml }` — work items within a layer. `notesHtml` is rich text (HTML string or null).
+- **Tasks**: `{ id, projectId, layerId, name, sorting, done, notesHtml, status, statusReason, assignee, blockedBy, links, needsPickup }` — work items within a layer. `notesHtml` is rich text (HTML string or null). `status` is `active`, `failed`, `blocked` or null, and is separate from `done`: marking a task done clears its status and releases the tasks it blocked. `links` are `{ label, target }` pairs. `needsPickup` marks a task edited in the browser under `open --inbox`. Files written before these fields existed load with the defaults.
+
+## File versions
+
+The file carries a `version`. `app/file/migrations.ts` holds `CURRENT_VERSION` and one function per older version that upgrades a raw file by one step; `deserialize` runs the chain in memory on every read, and the CLI and the web app both go through it. Reads never write. The first write saves the file at the current version and records the migration as an event, and `itsvertical migrate` does that on its own, keeping a `.v<n>.backup` copy.
+
+Any change to the shape of the file needs a new version and a migration with a test, including a test against the version 1 files in this repository (`sample.vertical`, `roadmap.vertical`). A file from a newer version is refused with a pointer to `itsvertical update`.
 
 ## Definition of Done
 

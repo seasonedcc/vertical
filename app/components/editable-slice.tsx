@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { cx, usePlaceCursorOnClickedPosition } from '~/lib/utils'
-import { useBoardDispatch } from '~/state/context'
+import { useBoardDispatch, useReadOnly } from '~/state/context'
 
 function EditableSlice({
   id,
@@ -11,6 +11,7 @@ function EditableSlice({
   name: string | undefined | null
 }) {
   const dispatch = useBoardDispatch()
+  const readOnly = useReadOnly()
   const [editing, setEditing] = useState(false)
   const [height, setHeight] = useState(18)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -109,6 +110,7 @@ function EditableSlice({
       type="button"
       ref={buttonRef}
       onClick={(event) => {
+        if (readOnly) return
         const buttonHeight = buttonRef.current?.offsetHeight ?? 18
 
         handleClick(event)

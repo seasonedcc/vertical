@@ -1,5 +1,6 @@
-import { deserialize, serialize } from '~/file/format'
-import type { BoardState } from '~/state/types'
+import { deserialize } from '~/file/format'
+import type { BoardAction } from '~/state/actions'
+import type { BoardEvent, BoardState } from '~/state/types'
 
 async function fetchProject(): Promise<BoardState> {
   const response = await fetch('/api/project')
@@ -10,15 +11,32 @@ async function fetchProject(): Promise<BoardState> {
   return deserialize(json)
 }
 
-async function saveProject(state: BoardState): Promise<void> {
-  const response = await fetch('/api/project', {
+async function saveActions(actions: BoardAction[]): Promise<BoardState> {
+  const response = await fetch('/api/actions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: serialize(state),
+    body: JSON.stringify({ actions }),
   })
   if (!response.ok) {
     throw new Error(`Failed to save project: ${response.statusText}`)
   }
+  return deserialize(await response.text())
+}
+
+type ServerMode = { readOnly: boolean; inbox: boolean }
+
+async function fetchMode(): Promise<ServerMode> {
+  const response = await fetch('/api/mode')
+  if (!response.ok) return { readOnly: false, inbox: false }
+  return response.json()
+}
+
+async function fetchLog(): Promise<BoardEvent[]> {
+  const response = await fetch('/api/log')
+  if (!response.ok) {
+    throw new Error(`Failed to load activity: ${response.statusText}`)
+  }
+  return response.json()
 }
 
 function reportDirty(dirty: boolean): void {
@@ -46,4 +64,11 @@ function subscribeToServer(
   return () => source.close()
 }
 
-export { fetchProject, reportDirty, saveProject, subscribeToServer }
+export {
+  fetchLog,
+  fetchMode,
+  fetchProject,
+  reportDirty,
+  saveActions,
+  subscribeToServer,
+}

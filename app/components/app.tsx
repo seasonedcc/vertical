@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchProject } from '~/file/api'
+import { fetchMode, fetchProject } from '~/file/api'
 import { BoardProvider } from '~/state/context'
 import type { BoardState } from '~/state/types'
 import { Board } from './board'
@@ -9,11 +9,15 @@ import { TaskNotesProvider } from './task-notes-drawer'
 
 function App() {
   const [boardState, setBoardState] = useState<BoardState | null>(null)
+  const [readOnly, setReadOnly] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchProject()
-      .then(setBoardState)
+    Promise.all([fetchProject(), fetchMode()])
+      .then(([state, mode]) => {
+        setReadOnly(mode.readOnly)
+        setBoardState(state)
+      })
       .catch((err) => setError(err.message))
   }, [])
 
@@ -36,7 +40,7 @@ function App() {
   }
 
   return (
-    <BoardProvider initialState={boardState}>
+    <BoardProvider initialState={boardState} readOnly={readOnly}>
       <ProjectModeProvider>
         <TaskNotesProvider>
           <Layout>

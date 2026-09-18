@@ -1,5 +1,14 @@
 import type { BoardAction } from './actions'
-import type { BoardState } from './types'
+import type { BoardState, Task } from './types'
+
+function releaseBlocker(task: Task, blockerId: string): Task {
+  if (!task.blockedBy.includes(blockerId)) return task
+  const blockedBy = task.blockedBy.filter((id) => id !== blockerId)
+  if (blockedBy.length > 0 || task.status !== 'blocked') {
+    return { ...task, blockedBy }
+  }
+  return { ...task, blockedBy, status: null, statusReason: null }
+}
 
 function boardReducer(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
@@ -22,6 +31,12 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
             sorting: action.sorting,
             done: false,
             notesHtml: null,
+            status: null,
+            statusReason: null,
+            assignee: null,
+            blockedBy: [],
+            links: [],
+            needsPickup: false,
           },
         ],
       }
@@ -53,6 +68,12 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
             sorting,
             done: false,
             notesHtml: null,
+            status: null,
+            statusReason: null,
+            assignee: null,
+            blockedBy: [],
+            links: [],
+            needsPickup: false,
           },
         ],
       }
@@ -69,14 +90,69 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
     case 'DELETE_TASK':
       return {
         ...state,
-        tasks: state.tasks.filter((t) => t.id !== action.taskId),
+        tasks: state.tasks
+          .filter((t) => t.id !== action.taskId)
+          .map((t) => releaseBlocker(t, action.taskId)),
       }
 
     case 'SET_TASK_DONE':
       return {
         ...state,
+        tasks: state.tasks.map((t) => {
+          if (t.id !== action.taskId) {
+            return action.done ? releaseBlocker(t, action.taskId) : t
+          }
+          if (!action.done) return { ...t, done: false }
+          return {
+            ...t,
+            done: true,
+            status: null,
+            statusReason: null,
+            blockedBy: [],
+          }
+        }),
+      }
+
+    case 'SET_TASK_STATUS':
+      return {
+        ...state,
         tasks: state.tasks.map((t) =>
-          t.id === action.taskId ? { ...t, done: action.done } : t
+          t.id === action.taskId
+            ? {
+                ...t,
+                done: action.status ? false : t.done,
+                status: action.status,
+                statusReason: action.reason,
+                assignee: action.assignee,
+                blockedBy: action.status === 'blocked' ? action.blockedBy : [],
+              }
+            : t
+        ),
+      }
+
+    case 'SET_TASK_LINK':
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.taskId
+            ? {
+                ...t,
+                links: [
+                  ...t.links.filter((l) => l.label !== action.label),
+                  { label: action.label, target: action.target },
+                ],
+              }
+            : t
+        ),
+      }
+
+    case 'REMOVE_TASK_LINK':
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.taskId
+            ? { ...t, links: t.links.filter((l) => l.label !== action.label) }
+            : t
         ),
       }
 
@@ -175,6 +251,14 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
         tasks: updatedTasks,
       }
     }
+
+    case 'SET_TASK_PICKUP':
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.taskId ? { ...t, needsPickup: action.needsPickup } : t
+        ),
+      }
 
     case 'SET_TASK_NOTES':
       return {

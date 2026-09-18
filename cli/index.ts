@@ -3,25 +3,34 @@ import path from 'node:path'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Command } from 'commander'
-import { serialize } from '~/file/format'
+import { fileVersion, serialize } from '~/file/format'
+import { CURRENT_VERSION } from '~/file/migrations'
 import { createBlankProject } from '~/state/initial-state'
+import type { TaskStatus } from '~/state/types'
 import {
   applyAction,
   fail,
+  loadEvents,
   loadState,
   output,
   resolveFilePath,
+  setActor,
+  updateState,
 } from './apply.js'
 import { showBoardGrid, showSummaryTable } from './board.js'
 import { forgetBoard, loadHistory, recordBoard } from './history.js'
+import { listInbox } from './inbox.js'
+import { applyPlan, parsePlan } from './plan.js'
 import { startServer } from './server.js'
 import { showBoard, showBoardJson } from './show.js'
+import { showSummary, summarizeBoard } from './summary.js'
 import {
   checkAndUpdate,
   checkForUpdate,
   getUpdateCommandString,
   performUpdate,
 } from './update.js'
+import { validateBoard } from './validate.js'
 
 function getDirname() {
   if (typeof __dirname !== 'undefined') return __dirname
@@ -38,7 +47,13 @@ const packageJson: { version: string } = JSON.parse(
   )
 )
 
-type JsonOption = { json?: boolean }
+type JsonOption = { json?: boolean; brief?: boolean }
+
+function requireTask(filePath: string, taskId: string, json?: boolean) {
+  if (!loadState(filePath).tasks.some((t) => t.id === taskId)) {
+    fail(`Task not found: ${taskId}`, json)
+  }
+}
 
 const program = new Command()
 
@@ -54,56 +69,99 @@ program
   .description('Create a new .vertical project file')
   .argument('<path>', 'File path for the new .vertical file')
   .argument('<name>', 'Project name')
+  .option('--no-track', 'Do not record this board in the board history')
   .option('--json', 'Output as JSON')
-  .action((fileDest: string, name: string, options: JsonOption) => {
-    const filePath = path.resolve(fileDest)
+  .action(
+    (
+      fileDest: string,
+      name: string,
+      options: JsonOption & { track: boolean }
+    ) => {
+      const filePath = path.resolve(fileDest)
 
-    if (fs.existsSync(filePath)) {
-      fail(`File already exists: ${filePath}`, options.json)
+      if (fs.existsSync(filePath)) {
+        fail(`File already exists: ${filePath}`, options.json)
+      }
+
+      if (options.track) {
+        try {
+          recordBoard(name, filePath)
+        } catch (error) {
+          fail((error as Error).message, options.json)
+        }
+      }
+
+      const dir = path.dirname(filePath)
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true })
+      }
+
+      const state = createBlankProject(name)
+      fs.writeFileSync(filePath, serialize(state))
+
+      output(state, options, `Created: ${filePath}`)
     }
-
-    const dir = path.dirname(filePath)
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-    }
-
-    const state = createBlankProject(name)
-    fs.writeFileSync(filePath, serialize(state))
-
-    try {
-      recordBoard(name, filePath)
-    } catch (error) {
-      fail((error as Error).message, options.json)
-    }
-
-    output(state, Boolean(options.json), `Created: ${filePath}`)
-  })
+  )
 
 program
   .command('open')
   .description('Open an existing .vertical file in the browser')
   .argument('<file>', 'Path to the .vertical file')
-  .action(async (file: string) => {
-    const filePath = resolveFilePath(file)
-    const state = loadState(filePath)
-    try {
-      recordBoard(state.project.name, filePath)
-    } catch (error) {
-      console.warn(
-        `Warning: could not track board: ${(error as Error).message}`
-      )
+  .option(
+    '--inbox',
+    'Flag tasks edited in the browser so an agent can pick them up'
+  )
+  .option('--read-only', 'Serve the board for viewing only')
+  .option('--no-track', 'Do not record this board in the board history')
+  .action(
+    async (
+      file: string,
+      options: { inbox?: boolean; readOnly?: boolean; track: boolean }
+    ) => {
+      if (options.inbox && options.readOnly) {
+        fail('--inbox and --read-only cannot be combined')
+      }
+      const filePath = resolveFilePath(file)
+      const state = loadState(filePath)
+      if (options.track) {
+        try {
+          recordBoard(state.project.name, filePath)
+        } catch (error) {
+          console.warn(
+            `Warning: could not track board: ${(error as Error).message}`
+          )
+        }
+      }
+      await startServer(filePath, {
+        inbox: options.inbox,
+        readOnly: options.readOnly,
+      })
     }
-    await startServer(filePath)
-  })
+  )
 
 program
   .command('dev')
   .description('Start dev server (fixed port, no browser open)')
   .argument('<file>', 'Path to the .vertical file')
-  .action(async (file: string) => {
-    const filePath = resolveFilePath(file)
-    await startServer(filePath, { port: 3456, open: false })
-  })
+  .option(
+    '--inbox',
+    'Flag tasks edited in the browser so an agent can pick them up'
+  )
+  .option('--read-only', 'Serve the board for viewing only')
+  .action(
+    async (file: string, options: { inbox?: boolean; readOnly?: boolean }) => {
+      if (options.inbox && options.readOnly) {
+        fail('--inbox and --read-only cannot be combined')
+      }
+      const filePath = resolveFilePath(file)
+      await startServer(filePath, {
+        port: 3456,
+        open: false,
+        inbox: options.inbox,
+        readOnly: options.readOnly,
+      })
+    }
+  )
 
 program
   .command('show')
@@ -112,10 +170,15 @@ program
   .option('--json', 'Output as JSON')
   .option('--box <slice-id>', 'Show only a specific box')
   .option('--visual', 'Show the board as a visual 3x3 grid with summary')
+  .option('--summary', 'Show counts per box and layer in a few lines')
   .action(
     (
       file: string,
-      options: JsonOption & { box?: string; visual?: boolean }
+      options: JsonOption & {
+        box?: string
+        visual?: boolean
+        summary?: boolean
+      }
     ) => {
       const filePath = resolveFilePath(file, options.json)
       const state = loadState(filePath)
@@ -127,7 +190,11 @@ program
         }
       }
 
-      if (options.json) {
+      if (options.summary && options.json) {
+        console.log(JSON.stringify(summarizeBoard(state, options.box), null, 2))
+      } else if (options.summary) {
+        showSummary(state, options.box)
+      } else if (options.json) {
         showBoardJson(state)
       } else if (options.visual) {
         showBoardGrid(state, options.box)
@@ -147,7 +214,168 @@ program
   .action((file: string, name: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
     const state = applyAction(filePath, { type: 'RENAME_PROJECT', name })
-    output(state, Boolean(options.json), `Project renamed to: ${name}`)
+    output(state, options, `Project renamed to: ${name}`)
+  })
+
+program
+  .command('apply')
+  .description('Fill empty boxes from a plan file in one call')
+  .argument('<file>', 'Path to the .vertical file')
+  .argument('<plan>', 'Path to a plan JSON file')
+  .option('--json', 'Output as JSON')
+  .action((file: string, planFile: string, options: JsonOption) => {
+    const filePath = resolveFilePath(file, options.json)
+    const planPath = resolveFilePath(planFile, options.json)
+
+    try {
+      const plan = parsePlan(fs.readFileSync(planPath, 'utf-8'))
+      let created: ReturnType<typeof applyPlan>['created'] = []
+      const state = updateState(
+        filePath,
+        (current) => {
+          const result = applyPlan(current, plan, () => crypto.randomUUID())
+          created = result.created
+          return result.state
+        },
+        () => [
+          {
+            summary: `Applied a plan: ${created.length} tasks in ${plan.boxes.length} box${plan.boxes.length === 1 ? '' : 'es'}`,
+            taskId: null,
+          },
+        ]
+      )
+
+      if (options.json && options.brief) {
+        console.log(JSON.stringify({ ok: true, created }))
+      } else {
+        output(state, options, `Plan applied: ${created.length} tasks created`)
+      }
+    } catch (error) {
+      fail((error as Error).message, options.json)
+    }
+  })
+
+program
+  .command('migrate')
+  .description('Upgrade a .vertical file to the current file version')
+  .argument('<file>', 'Path to the .vertical file')
+  .option('--check', 'Only report whether the file needs migrating')
+  .option('--json', 'Output as JSON')
+  .action((file: string, options: JsonOption & { check?: boolean }) => {
+    const filePath = resolveFilePath(file, options.json)
+    let version = CURRENT_VERSION
+    try {
+      const content = fs.readFileSync(filePath, 'utf-8')
+      version = fileVersion(content)
+      loadState(filePath)
+    } catch (error) {
+      fail((error as Error).message, options.json)
+    }
+    const needsMigration = version < CURRENT_VERSION
+
+    if (options.check || !needsMigration) {
+      const message = needsMigration
+        ? `Needs migrating: version ${version}, current is ${CURRENT_VERSION}`
+        : `Up to date: version ${version}`
+      console.log(
+        options.json
+          ? JSON.stringify({
+              version,
+              current: CURRENT_VERSION,
+              needsMigration,
+            })
+          : message
+      )
+      if (options.check && needsMigration) process.exit(1)
+      return
+    }
+
+    const backupPath = `${filePath}.v${version}.backup`
+    fs.copyFileSync(filePath, backupPath)
+    const state = updateState(filePath, (current) => current)
+    output(
+      state,
+      options,
+      `Migrated from version ${version} to ${CURRENT_VERSION}. The original is at ${backupPath}`
+    )
+  })
+
+program
+  .command('validate')
+  .description('Check the board for inconsistent statuses and blockers')
+  .argument('<file>', 'Path to the .vertical file')
+  .option('--json', 'Output as JSON')
+  .action((file: string, options: JsonOption) => {
+    const filePath = resolveFilePath(file, options.json)
+    const problems = validateBoard(loadState(filePath))
+
+    if (options.json) {
+      console.log(JSON.stringify({ valid: problems.length === 0, problems }))
+    } else if (problems.length === 0) {
+      console.log('Board is valid')
+    } else {
+      for (const problem of problems) console.error(problem)
+    }
+
+    if (problems.length > 0) process.exit(1)
+  })
+
+program
+  .command('log')
+  .description('Print the record of changes made to the board')
+  .argument('<file>', 'Path to the .vertical file')
+  .option('--limit <count>', 'How many of the latest events to print', '30')
+  .option('--since <iso-time>', 'Only events after this time')
+  .option('--json', 'Output as JSON')
+  .action(
+    (file: string, options: JsonOption & { limit: string; since?: string }) => {
+      const filePath = resolveFilePath(file, options.json)
+      const limit = Number(options.limit)
+      if (!Number.isInteger(limit) || limit < 1) {
+        fail(`Invalid limit: ${options.limit}`, options.json)
+      }
+      const since = options.since ? Date.parse(options.since) : null
+      if (since !== null && Number.isNaN(since)) {
+        fail(`Invalid time: ${options.since}`, options.json)
+      }
+
+      const events = loadEvents(filePath)
+        .filter((event) => since === null || Date.parse(event.at) > since)
+        .slice(-limit)
+
+      if (options.json) {
+        console.log(JSON.stringify(events, null, 2))
+      } else if (events.length === 0) {
+        console.log('No events')
+      } else {
+        for (const event of events) {
+          console.log(`${event.at} ${event.actor}: ${event.summary}`)
+        }
+      }
+    }
+  )
+
+program
+  .command('inbox')
+  .description('List tasks edited in the browser and not yet acknowledged')
+  .argument('<file>', 'Path to the .vertical file')
+  .option('--json', 'Output as JSON')
+  .action((file: string, options: JsonOption) => {
+    const filePath = resolveFilePath(file, options.json)
+    const items = listInbox(loadState(filePath))
+
+    if (options.json) {
+      console.log(JSON.stringify(items, null, 2))
+    } else if (items.length === 0) {
+      console.log('Inbox is empty')
+    } else {
+      for (const item of items) {
+        const where = [item.boxName ?? `Box ${item.box}`, item.layer]
+          .filter(Boolean)
+          .join(' / ')
+        console.log(`${item.name || '(unnamed)'} · ${where} (id: ${item.id})`)
+      }
+    }
   })
 
 const history = program.command('history').description('Manage board history')
@@ -193,7 +421,7 @@ history
     }
     output(
       state,
-      Boolean(options.json),
+      options,
       `Added to history: ${state.project.name} → ${filePath}`
     )
   })
@@ -260,7 +488,7 @@ task
           name,
           sorting,
         })
-        output(state, Boolean(options.json), `Task created (id: ${id})`)
+        output(state, options, `Task created (id: ${id})`, id)
         return
       }
 
@@ -279,7 +507,7 @@ task
         name,
         sorting,
       })
-      output(state, Boolean(options.json), `Task created (id: ${id})`)
+      output(state, options, `Task created (id: ${id})`, id)
     }
   )
 
@@ -291,12 +519,13 @@ task
   .option('--json', 'Output as JSON')
   .action((file: string, taskId: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
+    requireTask(filePath, taskId, options.json)
     const state = applyAction(filePath, {
       type: 'SET_TASK_DONE',
       taskId,
       done: true,
     })
-    output(state, Boolean(options.json), `Task marked as done (id: ${taskId})`)
+    output(state, options, `Task marked as done (id: ${taskId})`, taskId)
   })
 
 task
@@ -307,16 +536,13 @@ task
   .option('--json', 'Output as JSON')
   .action((file: string, taskId: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
+    requireTask(filePath, taskId, options.json)
     const state = applyAction(filePath, {
       type: 'SET_TASK_DONE',
       taskId,
       done: false,
     })
-    output(
-      state,
-      Boolean(options.json),
-      `Task marked as not done (id: ${taskId})`
-    )
+    output(state, options, `Task marked as not done (id: ${taskId})`, taskId)
   })
 
 task
@@ -328,12 +554,13 @@ task
   .option('--json', 'Output as JSON')
   .action((file: string, taskId: string, name: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
+    requireTask(filePath, taskId, options.json)
     const state = applyAction(filePath, {
       type: 'RENAME_TASK',
       taskId,
       name,
     })
-    output(state, Boolean(options.json), `Task renamed (id: ${taskId})`)
+    output(state, options, `Task renamed (id: ${taskId})`, taskId)
   })
 
 task
@@ -344,8 +571,9 @@ task
   .option('--json', 'Output as JSON')
   .action((file: string, taskId: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
+    requireTask(filePath, taskId, options.json)
     const state = applyAction(filePath, { type: 'DELETE_TASK', taskId })
-    output(state, Boolean(options.json), `Task deleted (id: ${taskId})`)
+    output(state, options, `Task deleted (id: ${taskId})`, taskId)
   })
 
 task
@@ -363,6 +591,7 @@ task
       options: JsonOption
     ) => {
       const filePath = resolveFilePath(file, options.json)
+      requireTask(filePath, taskId, options.json)
       const current = loadState(filePath)
 
       const layerTasks = current.tasks
@@ -379,7 +608,7 @@ task
         layerId: targetLayerId,
         sorting,
       })
-      output(state, Boolean(options.json), `Task moved (id: ${taskId})`)
+      output(state, options, `Task moved (id: ${taskId})`, taskId)
     }
   )
 
@@ -398,6 +627,7 @@ task
       options: JsonOption & { set?: string; clear?: boolean }
     ) => {
       const filePath = resolveFilePath(file, options.json)
+      requireTask(filePath, taskId, options.json)
 
       if (options.set !== undefined) {
         const state = applyAction(filePath, {
@@ -405,7 +635,7 @@ task
           taskId,
           notesHtml: options.set,
         })
-        output(state, Boolean(options.json), `Notes set (id: ${taskId})`)
+        output(state, options, `Notes set (id: ${taskId})`, taskId)
         return
       }
 
@@ -415,7 +645,7 @@ task
           taskId,
           notesHtml: null,
         })
-        output(state, Boolean(options.json), `Notes cleared (id: ${taskId})`)
+        output(state, options, `Notes cleared (id: ${taskId})`, taskId)
         return
       }
 
@@ -432,6 +662,131 @@ task
       }
     }
   )
+
+const TASK_STATUSES = ['active', 'failed', 'blocked', 'none']
+
+task
+  .command('status')
+  .description('Set a task status: active, failed, blocked or none')
+  .argument('<file>', 'Path to the .vertical file')
+  .argument('<task-id>', 'Task ID')
+  .argument('<status>', 'active, failed, blocked or none')
+  .option('--by <assignee>', 'Who holds the task')
+  .option('--reason <text>', 'Why the task failed or is blocked')
+  .option('--on <task-ids...>', 'Task IDs this task is blocked by')
+  .option('--json', 'Output as JSON')
+  .action(
+    (
+      file: string,
+      taskId: string,
+      status: string,
+      options: JsonOption & { by?: string; reason?: string; on?: string[] }
+    ) => {
+      const filePath = resolveFilePath(file, options.json)
+      const current = loadState(filePath)
+      const target = current.tasks.find((t) => t.id === taskId)
+
+      if (!target) fail(`Task not found: ${taskId}`, options.json)
+      if (!TASK_STATUSES.includes(status)) {
+        fail(`Unknown status: ${status}`, options.json)
+      }
+      if (options.on && status !== 'blocked') {
+        fail('--on only applies to the blocked status', options.json)
+      }
+      for (const blockerId of options.on ?? []) {
+        if (blockerId === taskId) {
+          fail('A task cannot block itself', options.json)
+        }
+        if (!current.tasks.some((t) => t.id === blockerId)) {
+          fail(`Task not found: ${blockerId}`, options.json)
+        }
+      }
+
+      const state = applyAction(filePath, {
+        type: 'SET_TASK_STATUS',
+        taskId,
+        status: status === 'none' ? null : (status as TaskStatus),
+        reason: options.reason ?? null,
+        assignee: options.by ?? (status === 'none' ? null : target.assignee),
+        blockedBy: options.on ?? [],
+      })
+      output(
+        state,
+        options,
+        `Task status set to ${status} (id: ${taskId})`,
+        taskId
+      )
+    }
+  )
+
+task
+  .command('link')
+  .description('Attach a labelled link to a task, replacing the same label')
+  .argument('<file>', 'Path to the .vertical file')
+  .argument('<task-id>', 'Task ID')
+  .argument('<label>', 'Link label, such as PR or verdict')
+  .argument('<target>', 'URL, path or reference')
+  .option('--json', 'Output as JSON')
+  .action(
+    (
+      file: string,
+      taskId: string,
+      label: string,
+      target: string,
+      options: JsonOption
+    ) => {
+      const filePath = resolveFilePath(file, options.json)
+      if (!loadState(filePath).tasks.some((t) => t.id === taskId)) {
+        fail(`Task not found: ${taskId}`, options.json)
+      }
+      const state = applyAction(filePath, {
+        type: 'SET_TASK_LINK',
+        taskId,
+        label,
+        target,
+      })
+      output(state, options, `Link set (id: ${taskId})`, taskId)
+    }
+  )
+
+task
+  .command('unlink')
+  .description('Remove a labelled link from a task')
+  .argument('<file>', 'Path to the .vertical file')
+  .argument('<task-id>', 'Task ID')
+  .argument('<label>', 'Link label')
+  .option('--json', 'Output as JSON')
+  .action(
+    (file: string, taskId: string, label: string, options: JsonOption) => {
+      const filePath = resolveFilePath(file, options.json)
+      requireTask(filePath, taskId, options.json)
+      const state = applyAction(filePath, {
+        type: 'REMOVE_TASK_LINK',
+        taskId,
+        label,
+      })
+      output(state, options, `Link removed (id: ${taskId})`, taskId)
+    }
+  )
+
+task
+  .command('ack')
+  .description('Acknowledge a task edited in the browser')
+  .argument('<file>', 'Path to the .vertical file')
+  .argument('<task-id>', 'Task ID')
+  .option('--json', 'Output as JSON')
+  .action((file: string, taskId: string, options: JsonOption) => {
+    const filePath = resolveFilePath(file, options.json)
+    if (!loadState(filePath).tasks.some((t) => t.id === taskId)) {
+      fail(`Task not found: ${taskId}`, options.json)
+    }
+    const state = applyAction(filePath, {
+      type: 'SET_TASK_PICKUP',
+      taskId,
+      needsPickup: false,
+    })
+    output(state, options, `Task acknowledged (id: ${taskId})`, taskId)
+  })
 
 const box = program.command('box').description('Manage boxes (slices)')
 
@@ -450,7 +805,7 @@ box
         sliceId,
         name,
       })
-      output(state, Boolean(options.json), `Box renamed (id: ${sliceId})`)
+      output(state, options, `Box renamed (id: ${sliceId})`, sliceId)
     }
   )
 
@@ -463,7 +818,7 @@ box
   .action((file: string, sliceId: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
     const state = applyAction(filePath, { type: 'UNNAME_SLICE', sliceId })
-    output(state, Boolean(options.json), `Box name cleared (id: ${sliceId})`)
+    output(state, options, `Box name cleared (id: ${sliceId})`, sliceId)
   })
 
 box
@@ -495,11 +850,7 @@ box
           return { id: s.id, boxNumber: s.boxNumber }
         }),
       })
-      output(
-        state,
-        Boolean(options.json),
-        `Boxes swapped (${sliceId1} <-> ${sliceId2})`
-      )
+      output(state, options, `Boxes swapped (${sliceId1} <-> ${sliceId2})`)
     }
   )
 
@@ -549,8 +900,9 @@ layer
     })
     output(
       state,
-      Boolean(options.json),
-      `Layer split. New layer created (id: ${newLayerId})`
+      options,
+      `Layer split. New layer created (id: ${newLayerId})`,
+      newLayerId
     )
   })
 
@@ -563,7 +915,7 @@ layer
   .action((file: string, layerId: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
     const state = applyAction(filePath, { type: 'UNSPLIT_LAYER', layerId })
-    output(state, Boolean(options.json), `Layer merged (id: ${layerId})`)
+    output(state, options, `Layer merged (id: ${layerId})`, layerId)
   })
 
 layer
@@ -581,7 +933,7 @@ layer
         layerId,
         name,
       })
-      output(state, Boolean(options.json), `Layer renamed (id: ${layerId})`)
+      output(state, options, `Layer renamed (id: ${layerId})`, layerId)
     }
   )
 
@@ -594,7 +946,7 @@ layer
   .action((file: string, layerId: string, options: JsonOption) => {
     const filePath = resolveFilePath(file, options.json)
     const state = applyAction(filePath, { type: 'UNNAME_LAYER', layerId })
-    output(state, Boolean(options.json), `Layer name cleared (id: ${layerId})`)
+    output(state, options, `Layer name cleared (id: ${layerId})`, layerId)
   })
 
 layer
@@ -615,8 +967,9 @@ layer
       })
       output(
         state,
-        Boolean(options.json),
-        `Layer status set to ${status} (id: ${layerId})`
+        options,
+        `Layer status set to ${status} (id: ${layerId})`,
+        layerId
       )
     }
   )
@@ -689,6 +1042,28 @@ program
 
     if (!success) process.exit(1)
   })
+
+function addSharedOptions(command: Command) {
+  for (const subcommand of command.commands) {
+    if (subcommand.options.some((o) => o.long === '--json')) {
+      subcommand.option(
+        '--brief',
+        'With --json, output only { ok, id } instead of the whole board'
+      )
+      subcommand.option(
+        '--actor <name>',
+        'Who is making this change, recorded in the log'
+      )
+    }
+    addSharedOptions(subcommand)
+  }
+}
+
+addSharedOptions(program)
+
+program.hook('preAction', (_program, actionCommand) => {
+  setActor(actionCommand.opts().actor)
+})
 
 if (process.argv.length === 2) {
   program.outputHelp()

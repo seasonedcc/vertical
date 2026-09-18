@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { usePlaceCursorOnClickedPosition } from '~/lib/utils'
-import { useBoardDispatch } from '~/state/context'
+import { useBoardDispatch, useReadOnly } from '~/state/context'
 
 function EditableLayer({
   id,
@@ -15,6 +15,7 @@ function EditableLayer({
   suffix?: string
 }) {
   const dispatch = useBoardDispatch()
+  const readOnly = useReadOnly()
   const [editing, setEditing] = useState(false)
   const [height, setHeight] = useState(16)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -105,6 +106,7 @@ function EditableLayer({
       type="button"
       ref={buttonRef}
       onClick={(event) => {
+        if (readOnly) return
         const buttonHeight = buttonRef.current?.offsetHeight ?? 16
 
         handleClick(event)
