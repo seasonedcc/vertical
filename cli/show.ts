@@ -1,5 +1,25 @@
 import { sortBy } from '~/lib/utils'
-import type { BoardState } from '~/state/types'
+import type { BoardState, Task } from '~/state/types'
+
+function taskTags(task: Task) {
+  const tags: string[] = []
+  if (task.status === 'active') {
+    tags.push(task.assignee ? `[active: ${task.assignee}]` : '[active]')
+  }
+  if (task.status === 'failed') {
+    tags.push(task.statusReason ? `[failed: ${task.statusReason}]` : '[failed]')
+  }
+  if (task.status === 'blocked') {
+    const detail = task.blockedBy.length
+      ? `by ${task.blockedBy.join(', ')}`
+      : task.statusReason
+    tags.push(detail ? `[blocked ${detail}]` : '[blocked]')
+  }
+  for (const link of task.links) tags.push(`[${link.label}: ${link.target}]`)
+  if (task.notesHtml) tags.push('[notes]')
+  if (task.needsPickup) tags.push('[needs pickup]')
+  return tags.length > 0 ? ` ${tags.join(' ')}` : ''
+}
 
 function showBoard(state: BoardState, boxId?: string) {
   const { project, slices, layers, tasks } = state
@@ -24,7 +44,7 @@ function showBoard(state: BoardState, boxId?: string) {
       const layerName = layer.name || '(unnamed)'
       const statusTag = layer.status === 'done' ? ' [done]' : ''
       const layerLabel =
-        sliceLayers.length > 1 ? `Layer: ${layerName}` : 'Layer'
+        sliceLayers.length > 1 || layer.name ? `Layer: ${layerName}` : 'Layer'
       console.log(`  ${layerLabel} (id: ${layer.id})${statusTag}`)
 
       const layerTasks = sortBy(
@@ -37,8 +57,9 @@ function showBoard(state: BoardState, boxId?: string) {
       } else {
         for (const task of layerTasks) {
           const check = task.done ? 'x' : ' '
-          const notesTag = task.notesHtml ? ' [notes]' : ''
-          console.log(`    [${check}] ${task.name}${notesTag} (id: ${task.id})`)
+          console.log(
+            `    [${check}] ${task.name}${taskTags(task)} (id: ${task.id})`
+          )
         }
       }
     }

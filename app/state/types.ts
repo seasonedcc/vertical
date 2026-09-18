@@ -18,6 +18,13 @@ type Layer = {
   status: 'done' | null
 }
 
+type TaskStatus = 'active' | 'failed' | 'blocked'
+
+type TaskLink = {
+  label: string
+  target: string
+}
+
 type Task = {
   id: string
   projectId: string
@@ -26,6 +33,12 @@ type Task = {
   sorting: number
   done: boolean
   notesHtml: string | null
+  status: TaskStatus | null
+  statusReason: string | null
+  assignee: string | null
+  blockedBy: string[]
+  links: TaskLink[]
+  needsPickup: boolean
 }
 
 type BoardState = {
@@ -35,4 +48,4 @@ type BoardState = {
   tasks: Task[]
 }
 
-export type { BoardState, Layer, Project, Slice, Task }
+export type { BoardState, Layer, Project, Slice, Task, TaskLink, TaskStatus }

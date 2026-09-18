@@ -43,6 +43,12 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     sorting: 1,
     done: false,
     notesHtml: null,
+    status: null,
+    statusReason: null,
+    assignee: null,
+    blockedBy: [],
+    links: [],
+    needsPickup: false,
     ...overrides,
   }
 }
@@ -141,14 +147,14 @@ describe('output', () => {
   it('logs JSON when json is true', () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
     const state = makeState()
-    output(state, true, 'ignored message')
+    output(state, { json: true }, 'ignored message')
     const logged = logSpy.mock.calls.map((c) => String(c[0])).join('\n')
     expect(() => JSON.parse(logged)).not.toThrow()
   })
 
   it('logs the message when json is false', () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    output(makeState(), false, 'Done!')
+    output(makeState(), {}, 'Done!')
     expect(logSpy).toHaveBeenCalledWith('Done!')
   })
 })

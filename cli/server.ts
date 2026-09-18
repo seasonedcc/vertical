@@ -5,6 +5,11 @@ import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
 import getPort from 'get-port'
 import open from 'open'
+import { serialize } from '~/file/format'
+import type { BoardAction } from '~/state/actions'
+import { boardReducer } from '~/state/reducer'
+import { updateState } from './apply.js'
+import { flagBrowserEdits } from './inbox.js'
 
 const MIME_TYPES: Record<string, string> = {
   '.html': 'text/html',
@@ -73,7 +78,7 @@ function confirm(question: string): Promise<boolean> {
   })
 }
 
-type ServerOptions = { port?: number; open?: boolean }
+type ServerOptions = { port?: number; open?: boolean; inbox?: boolean }
 
 async function startServer(filePath: string, options: ServerOptions = {}) {
   const absoluteFilePath = path.resolve(filePath)
@@ -97,11 +102,15 @@ async function startServer(filePath: string, options: ServerOptions = {}) {
       return
     }
 
-    if (url === '/api/project' && req.method === 'POST') {
+    if (url === '/api/actions' && req.method === 'POST') {
       const body = await readRequestBody(req)
-      fs.writeFileSync(absoluteFilePath, body)
+      const { actions } = JSON.parse(body) as { actions: BoardAction[] }
+      const state = updateState(absoluteFilePath, (current) => {
+        const next = actions.reduce(boardReducer, current)
+        return options.inbox ? flagBrowserEdits(next, actions) : next
+      })
       res.writeHead(200, { 'Content-Type': 'application/json' })
-      res.end('{"ok":true}')
+      res.end(serialize(state))
       return
     }
 
@@ -142,7 +151,8 @@ async function startServer(filePath: string, options: ServerOptions = {}) {
 
   const sseClients = new Set<http.ServerResponse>()
 
-  fs.watch(absoluteFilePath, () => {
+  fs.watch(path.dirname(absoluteFilePath), (_event, changedName) => {
+    if (changedName !== path.basename(absoluteFilePath)) return
     for (const client of sseClients) {
       client.write('data: file-changed\n\n')
     }

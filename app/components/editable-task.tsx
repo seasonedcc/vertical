@@ -3,7 +3,7 @@ import { StickyNoteIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { cx, usePlaceCursorOnClickedPosition } from '~/lib/utils'
-import { useBoardDispatch } from '~/state/context'
+import { useBoardDispatch, useBoardState } from '~/state/context'
 import type { Task } from '~/state/types'
 import { DragHandleIcon } from './drag-handle-icon'
 import type { OverTaskData } from './drag-helpers'
@@ -34,6 +34,96 @@ function TaskMarker({
         hideForDragging={isDragging}
         task={task}
       />
+    </div>
+  )
+}
+
+const badgeClassName = 'rounded px-1 font-medium'
+
+function TaskBadges({ task, hidden }: { task: Task; hidden: boolean }) {
+  const { tasks } = useBoardState()
+
+  if (!task.status && task.links.length === 0 && !task.needsPickup) return null
+
+  const blockerNames = task.blockedBy
+    .map((id) => tasks.find((t) => t.id === id)?.name)
+    .filter(Boolean)
+    .join(', ')
+  const blockedDetail = blockerNames
+    ? `waits on ${blockerNames}`
+    : task.statusReason
+
+  return (
+    <div
+      className={cx(
+        'flex flex-wrap items-center gap-1 px-1 pb-0.5 text-[10px] leading-[14px]',
+        hidden && 'invisible'
+      )}
+    >
+      {task.status === 'active' && (
+        <span
+          className={cx(
+            badgeClassName,
+            'bg-cyan-100 text-cyan-900 dark:bg-cyan-900 dark:text-cyan-100'
+          )}
+        >
+          {task.assignee ? `Working · ${task.assignee}` : 'Working'}
+        </span>
+      )}
+      {task.status === 'failed' && (
+        <span
+          className={cx(
+            badgeClassName,
+            'bg-red-100 text-red-900 dark:bg-red-900 dark:text-red-100'
+          )}
+        >
+          {task.statusReason ? `Failed · ${task.statusReason}` : 'Failed'}
+        </span>
+      )}
+      {task.status === 'blocked' && (
+        <span
+          className={cx(
+            badgeClassName,
+            'bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100'
+          )}
+        >
+          {blockedDetail ? `Blocked · ${blockedDetail}` : 'Blocked'}
+        </span>
+      )}
+      {task.links.map((link) =>
+        /^https?:\/\//.test(link.target) ? (
+          <a
+            key={link.label}
+            href={link.target}
+            target="_blank"
+            rel="noreferrer"
+            className={cx(
+              badgeClassName,
+              'bg-base-200 text-base-content/70 underline'
+            )}
+            onClick={(event) => event.stopPropagation()}
+          >
+            {link.label}
+          </a>
+        ) : (
+          <span
+            key={link.label}
+            className={cx(badgeClassName, 'bg-base-200 text-base-content/70')}
+          >
+            {link.label}: {link.target}
+          </span>
+        )
+      )}
+      {task.needsPickup && (
+        <span
+          className={cx(
+            badgeClassName,
+            'bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100'
+          )}
+        >
+          Waiting for pickup
+        </span>
+      )}
     </div>
   )
 }
@@ -226,51 +316,54 @@ function EditableTask({
         />
       )}
       <TaskMarker variant={variant} isDragging={isDragging} task={task} />
-      <button
-        tabIndex={0}
-        className={cx(
-          'flex-grow cursor-text break-words border-2 border-transparent px-1 text-left text-[12px] text-base-content/60 leading-[16px] outline-hidden focus:border-gray-100 focus:ring-0 active:border-transparent',
-          isDragging
-            ? 'text-transparent focus:border-transparent'
-            : 'focus:border-neutral-content',
-          task.done && 'line-through'
-        )}
-        ref={buttonRef}
-        aria-label={task.name}
-        type="button"
-        data-task-index={index}
-        onKeyDown={(event) => {
-          if (['Backspace', 'Delete'].includes(event.key)) {
-            event.stopPropagation()
-            if (hasNotes) {
-              flashNotesIcon()
-              return
+      <div className="flex min-w-0 flex-grow flex-col">
+        <button
+          tabIndex={0}
+          className={cx(
+            'flex-grow cursor-text break-words border-2 border-transparent px-1 text-left text-[12px] text-base-content/60 leading-[16px] outline-hidden focus:border-gray-100 focus:ring-0 active:border-transparent',
+            isDragging
+              ? 'text-transparent focus:border-transparent'
+              : 'focus:border-neutral-content',
+            task.done && 'line-through'
+          )}
+          ref={buttonRef}
+          aria-label={task.name}
+          type="button"
+          data-task-index={index}
+          onKeyDown={(event) => {
+            if (['Backspace', 'Delete'].includes(event.key)) {
+              event.stopPropagation()
+              if (hasNotes) {
+                flashNotesIcon()
+                return
+              }
+              dispatch({ type: 'DELETE_TASK', taskId: task.id })
+              onDeleted(index)
             }
-            dispatch({ type: 'DELETE_TASK', taskId: task.id })
-            onDeleted(index)
-          }
-        }}
-        onClick={(event) => {
-          if (projectMode === 'split') return
+          }}
+          onClick={(event) => {
+            if (projectMode === 'split') return
 
-          event.stopPropagation()
-          const buttonHeight = wrapperRef.current?.offsetHeight ?? 16
+            event.stopPropagation()
+            const buttonHeight = wrapperRef.current?.offsetHeight ?? 16
 
-          handleClick(event)
+            handleClick(event)
 
-          flushSync(() => {
-            setHeight(buttonHeight)
-          })
+            flushSync(() => {
+              setHeight(buttonHeight)
+            })
 
-          flushSync(() => {
-            setEditing(true)
-          })
+            flushSync(() => {
+              setEditing(true)
+            })
 
-          textAreaRef.current?.focus()
-        }}
-      >
-        {task.name}
-      </button>
+            textAreaRef.current?.focus()
+          }}
+        >
+          {task.name}
+        </button>
+        <TaskBadges task={task} hidden={isDragging} />
+      </div>
       <button
         ref={notesIconRef}
         type="button"

@@ -1,4 +1,4 @@
-import type { BoardState } from './types'
+import type { BoardState, TaskStatus } from './types'
 
 type BoardAction =
   | { type: 'RENAME_PROJECT'; name: string }
@@ -39,6 +39,17 @@ type BoardAction =
       slices: Array<{ id: string; boxNumber: number }>
     }
   | { type: 'SET_TASK_NOTES'; taskId: string; notesHtml: string | null }
+  | {
+      type: 'SET_TASK_STATUS'
+      taskId: string
+      status: TaskStatus | null
+      reason: string | null
+      assignee: string | null
+      blockedBy: string[]
+    }
+  | { type: 'SET_TASK_LINK'; taskId: string; label: string; target: string }
+  | { type: 'REMOVE_TASK_LINK'; taskId: string; label: string }
+  | { type: 'SET_TASK_PICKUP'; taskId: string; needsPickup: boolean }
   | { type: 'LOAD_STATE'; state: BoardState }
 
 export type { BoardAction }

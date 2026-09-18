@@ -2,11 +2,11 @@ import {
   createContext,
   useCallback,
   useContext,
-  useMemo,
   useReducer,
+  useRef,
   useState,
 } from 'react'
-import { serialize } from '~/file/format'
+import { saveActions } from '~/file/api'
 import type { BoardAction } from './actions'
 import { boardReducer } from './reducer'
 import type { BoardState } from './types'
@@ -15,7 +15,7 @@ type BoardContextValue = {
   state: BoardState
   dispatch: (action: BoardAction) => void
   isDirty: () => boolean
-  markClean: () => void
+  savePendingActions: () => Promise<void>
 }
 
 const BoardContext = createContext<BoardContextValue | undefined>(undefined)
@@ -28,28 +28,41 @@ function BoardProvider({
   children: React.ReactNode
 }) {
   const [state, rawDispatch] = useReducer(boardReducer, initialState)
-  const [savedSnapshot, setSavedSnapshot] = useState(() =>
-    serialize(initialState)
-  )
+  const pendingActionsRef = useRef<BoardAction[]>([])
+  const [pendingCount, setPendingCount] = useState(0)
 
   const dispatch = useCallback((action: BoardAction) => {
     rawDispatch(action)
-    if (action.type === 'LOAD_STATE') {
-      setSavedSnapshot(serialize(action.state))
+    if (action.type === 'LOAD_STATE') return
+    pendingActionsRef.current = [...pendingActionsRef.current, action]
+    setPendingCount(pendingActionsRef.current.length)
+  }, [])
+
+  const isDirty = useCallback(() => pendingCount > 0, [pendingCount])
+
+  const savePendingActions = useCallback(async () => {
+    const actions = pendingActionsRef.current
+    if (actions.length === 0) return
+    pendingActionsRef.current = []
+
+    try {
+      const savedState = await saveActions(actions)
+      rawDispatch({
+        type: 'LOAD_STATE',
+        state: pendingActionsRef.current.reduce(boardReducer, savedState),
+      })
+    } catch (error) {
+      pendingActionsRef.current = [...actions, ...pendingActionsRef.current]
+      throw error
+    } finally {
+      setPendingCount(pendingActionsRef.current.length)
     }
   }, [])
 
-  const currentSnapshot = useMemo(() => serialize(state), [state])
-  const isDirty = useCallback(
-    () => currentSnapshot !== savedSnapshot,
-    [currentSnapshot, savedSnapshot]
-  )
-  const markClean = useCallback(() => {
-    setSavedSnapshot(currentSnapshot)
-  }, [currentSnapshot])
-
   return (
-    <BoardContext.Provider value={{ state, dispatch, isDirty, markClean }}>
+    <BoardContext.Provider
+      value={{ state, dispatch, isDirty, savePendingActions }}
+    >
       {children}
     </BoardContext.Provider>
   )
@@ -75,11 +88,11 @@ function useIsDirty() {
   return context.isDirty
 }
 
-function useMarkClean() {
+function useSavePendingActions() {
   const context = useContext(BoardContext)
   if (!context)
-    throw new Error('useMarkClean must be used within BoardProvider')
-  return context.markClean
+    throw new Error('useSavePendingActions must be used within BoardProvider')
+  return context.savePendingActions
 }
 
 export {
@@ -87,5 +100,5 @@ export {
   useBoardDispatch,
   useBoardState,
   useIsDirty,
-  useMarkClean,
+  useSavePendingActions,
 }

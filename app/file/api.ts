@@ -1,4 +1,5 @@
-import { deserialize, serialize } from '~/file/format'
+import { deserialize } from '~/file/format'
+import type { BoardAction } from '~/state/actions'
 import type { BoardState } from '~/state/types'
 
 async function fetchProject(): Promise<BoardState> {
@@ -10,15 +11,16 @@ async function fetchProject(): Promise<BoardState> {
   return deserialize(json)
 }
 
-async function saveProject(state: BoardState): Promise<void> {
-  const response = await fetch('/api/project', {
+async function saveActions(actions: BoardAction[]): Promise<BoardState> {
+  const response = await fetch('/api/actions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: serialize(state),
+    body: JSON.stringify({ actions }),
   })
   if (!response.ok) {
     throw new Error(`Failed to save project: ${response.statusText}`)
   }
+  return deserialize(await response.text())
 }
 
 function reportDirty(dirty: boolean): void {
@@ -46,4 +48,4 @@ function subscribeToServer(
   return () => source.close()
 }
 
-export { fetchProject, reportDirty, saveProject, subscribeToServer }
+export { fetchProject, reportDirty, saveActions, subscribeToServer }

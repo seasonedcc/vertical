@@ -5,7 +5,10 @@ type VerticalFile = {
   project: BoardState['project']
   slices: BoardState['slices']
   layers: BoardState['layers']
-  tasks: Array<Omit<Task, 'notesHtml'> & { notesHtml?: string | null }>
+  tasks: Array<
+    Pick<Task, 'id' | 'projectId' | 'layerId' | 'name' | 'sorting' | 'done'> &
+      Partial<Task>
+  >
 }
 
 function serialize(state: BoardState): string {
@@ -34,7 +37,16 @@ function deserialize(json: string): BoardState {
     project: file.project,
     slices: file.slices,
     layers: file.layers,
-    tasks: file.tasks.map((t) => ({ ...t, notesHtml: t.notesHtml ?? null })),
+    tasks: file.tasks.map((t) => ({
+      ...t,
+      notesHtml: t.notesHtml ?? null,
+      status: t.status ?? null,
+      statusReason: t.statusReason ?? null,
+      assignee: t.assignee ?? null,
+      blockedBy: t.blockedBy ?? [],
+      links: t.links ?? [],
+      needsPickup: t.needsPickup ?? false,
+    })),
   }
 }
 

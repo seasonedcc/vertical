@@ -32,6 +32,12 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     sorting: 1,
     done: false,
     notesHtml: null,
+    status: null,
+    statusReason: null,
+    assignee: null,
+    blockedBy: [],
+    links: [],
+    needsPickup: false,
     ...overrides,
   }
 }
@@ -88,6 +94,12 @@ describe('boardReducer', () => {
         sorting: 2,
         done: false,
         notesHtml: null,
+        status: null,
+        statusReason: null,
+        assignee: null,
+        blockedBy: [],
+        links: [],
+        needsPickup: false,
       })
     })
 
@@ -510,6 +522,179 @@ describe('boardReducer', () => {
       expect(result.slices.find((s) => s.id === 'slice-1')?.boxNumber).toBe(3)
       expect(result.slices.find((s) => s.id === 'slice-2')?.boxNumber).toBe(2)
       expect(result.slices.find((s) => s.id === 'slice-3')?.boxNumber).toBe(1)
+    })
+  })
+
+  describe('SET_TASK_STATUS', () => {
+    it('sets the status, reason and assignee', () => {
+      const state = makeState({ tasks: [makeTask()] })
+      const result = boardReducer(state, {
+        type: 'SET_TASK_STATUS',
+        taskId: 'task-1',
+        status: 'failed',
+        reason: 'gates red',
+        assignee: 'opus',
+        blockedBy: [],
+      })
+      expect(result.tasks[0]).toMatchObject({
+        status: 'failed',
+        statusReason: 'gates red',
+        assignee: 'opus',
+      })
+    })
+
+    it('reopens a done task when a status is set', () => {
+      const state = makeState({ tasks: [makeTask({ done: true })] })
+      const result = boardReducer(state, {
+        type: 'SET_TASK_STATUS',
+        taskId: 'task-1',
+        status: 'active',
+        reason: null,
+        assignee: null,
+        blockedBy: [],
+      })
+      expect(result.tasks[0].done).toBe(false)
+    })
+
+    it('keeps blockers only for the blocked status', () => {
+      const state = makeState({
+        tasks: [makeTask(), makeTask({ id: 'task-2' })],
+      })
+      const blocked = boardReducer(state, {
+        type: 'SET_TASK_STATUS',
+        taskId: 'task-1',
+        status: 'blocked',
+        reason: null,
+        assignee: null,
+        blockedBy: ['task-2'],
+      })
+      expect(blocked.tasks[0].blockedBy).toEqual(['task-2'])
+
+      const active = boardReducer(blocked, {
+        type: 'SET_TASK_STATUS',
+        taskId: 'task-1',
+        status: 'active',
+        reason: null,
+        assignee: null,
+        blockedBy: ['task-2'],
+      })
+      expect(active.tasks[0].blockedBy).toEqual([])
+    })
+  })
+
+  describe('SET_TASK_DONE with statuses', () => {
+    it('clears the status of the task marked done', () => {
+      const state = makeState({
+        tasks: [makeTask({ status: 'failed', statusReason: 'gates red' })],
+      })
+      const result = boardReducer(state, {
+        type: 'SET_TASK_DONE',
+        taskId: 'task-1',
+        done: true,
+      })
+      expect(result.tasks[0]).toMatchObject({
+        done: true,
+        status: null,
+        statusReason: null,
+      })
+    })
+
+    it('unblocks tasks whose last blocker is done', () => {
+      const state = makeState({
+        tasks: [
+          makeTask(),
+          makeTask({ id: 'task-2', status: 'blocked', blockedBy: ['task-1'] }),
+        ],
+      })
+      const result = boardReducer(state, {
+        type: 'SET_TASK_DONE',
+        taskId: 'task-1',
+        done: true,
+      })
+      expect(result.tasks[1]).toMatchObject({ status: null, blockedBy: [] })
+    })
+
+    it('keeps a task blocked while another blocker is open', () => {
+      const state = makeState({
+        tasks: [
+          makeTask(),
+          makeTask({ id: 'task-2' }),
+          makeTask({
+            id: 'task-3',
+            status: 'blocked',
+            blockedBy: ['task-1', 'task-2'],
+          }),
+        ],
+      })
+      const result = boardReducer(state, {
+        type: 'SET_TASK_DONE',
+        taskId: 'task-1',
+        done: true,
+      })
+      expect(result.tasks[2]).toMatchObject({
+        status: 'blocked',
+        blockedBy: ['task-2'],
+      })
+    })
+  })
+
+  describe('DELETE_TASK with blockers', () => {
+    it('releases tasks blocked by the deleted task', () => {
+      const state = makeState({
+        tasks: [
+          makeTask(),
+          makeTask({ id: 'task-2', status: 'blocked', blockedBy: ['task-1'] }),
+        ],
+      })
+      const result = boardReducer(state, {
+        type: 'DELETE_TASK',
+        taskId: 'task-1',
+      })
+      expect(result.tasks).toHaveLength(1)
+      expect(result.tasks[0]).toMatchObject({ status: null, blockedBy: [] })
+    })
+  })
+
+  describe('SET_TASK_LINK and REMOVE_TASK_LINK', () => {
+    it('adds a link and replaces one with the same label', () => {
+      const state = makeState({ tasks: [makeTask()] })
+      const first = boardReducer(state, {
+        type: 'SET_TASK_LINK',
+        taskId: 'task-1',
+        label: 'PR',
+        target: '#1',
+      })
+      const second = boardReducer(first, {
+        type: 'SET_TASK_LINK',
+        taskId: 'task-1',
+        label: 'PR',
+        target: '#2',
+      })
+      expect(second.tasks[0].links).toEqual([{ label: 'PR', target: '#2' }])
+    })
+
+    it('removes a link by label', () => {
+      const state = makeState({
+        tasks: [makeTask({ links: [{ label: 'PR', target: '#1' }] })],
+      })
+      const result = boardReducer(state, {
+        type: 'REMOVE_TASK_LINK',
+        taskId: 'task-1',
+        label: 'PR',
+      })
+      expect(result.tasks[0].links).toEqual([])
+    })
+  })
+
+  describe('SET_TASK_PICKUP', () => {
+    it('sets and clears the pickup flag', () => {
+      const state = makeState({ tasks: [makeTask({ needsPickup: true })] })
+      const result = boardReducer(state, {
+        type: 'SET_TASK_PICKUP',
+        taskId: 'task-1',
+        needsPickup: false,
+      })
+      expect(result.tasks[0].needsPickup).toBe(false)
     })
   })
 

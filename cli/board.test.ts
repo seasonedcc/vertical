@@ -32,6 +32,12 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     sorting: 1,
     done: false,
     notesHtml: null,
+    status: null,
+    statusReason: null,
+    assignee: null,
+    blockedBy: [],
+    links: [],
+    needsPickup: false,
     ...overrides,
   }
 }

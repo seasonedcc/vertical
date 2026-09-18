@@ -26,6 +26,12 @@ function makeState(overrides: Partial<BoardState> = {}): BoardState {
         sorting: 1,
         done: false,
         notesHtml: null,
+        status: null,
+        statusReason: null,
+        assignee: null,
+        blockedBy: [],
+        links: [],
+        needsPickup: false,
       },
     ],
     ...overrides,
@@ -88,6 +94,34 @@ describe('deserialize', () => {
     expect(result.tasks[0].notesHtml).toBeNull()
   })
 
+  it('normalizes missing status fields on older files', () => {
+    const json = JSON.stringify({
+      version: 1,
+      project: { id: 'p', name: 'P' },
+      slices: [],
+      layers: [],
+      tasks: [
+        {
+          id: 't1',
+          projectId: 'p',
+          layerId: 'l1',
+          name: 'Task',
+          sorting: 1,
+          done: false,
+        },
+      ],
+    })
+    const result = deserialize(json)
+    expect(result.tasks[0]).toMatchObject({
+      status: null,
+      statusReason: null,
+      assignee: null,
+      blockedBy: [],
+      links: [],
+      needsPickup: false,
+    })
+  })
+
   it('preserves notesHtml when present', () => {
     const json = JSON.stringify({
       version: 1,
@@ -103,6 +137,12 @@ describe('deserialize', () => {
           sorting: 1,
           done: false,
           notesHtml: '<p>Hello</p>',
+          status: null,
+          statusReason: null,
+          assignee: null,
+          blockedBy: [],
+          links: [],
+          needsPickup: false,
         },
       ],
     })
@@ -149,6 +189,12 @@ describe('round-trip', () => {
           sorting: 1,
           done: false,
           notesHtml: '<p>Notes</p>',
+          status: null,
+          statusReason: null,
+          assignee: null,
+          blockedBy: [],
+          links: [],
+          needsPickup: false,
         },
         {
           id: 'task-2',
@@ -158,6 +204,12 @@ describe('round-trip', () => {
           sorting: 2,
           done: true,
           notesHtml: null,
+          status: null,
+          statusReason: null,
+          assignee: null,
+          blockedBy: [],
+          links: [],
+          needsPickup: false,
         },
       ],
     })

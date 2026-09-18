@@ -1,18 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import {
-  fetchProject,
-  reportDirty,
-  saveProject,
-  subscribeToServer,
-} from '~/file/api'
+import { fetchProject, reportDirty, subscribeToServer } from '~/file/api'
 import logo from '~/images/logo.png'
 import { cx, usePlaceCursorOnClickedPosition } from '~/lib/utils'
 import {
   useBoardDispatch,
   useBoardState,
   useIsDirty,
-  useMarkClean,
+  useSavePendingActions,
 } from '~/state/context'
 import { useProjectMode } from './project-mode'
 
@@ -132,15 +127,12 @@ function Layout({
   const state = useBoardState()
   const dispatch = useBoardDispatch()
   const isDirty = useIsDirty()
-  const markClean = useMarkClean()
+  const savePendingActions = useSavePendingActions()
   const { projectMode, setProjectMode } = useProjectMode()
   const [disconnected, setDisconnected] = useState(false)
   const dirtyRef = useRef(false)
 
-  const handleSave = async () => {
-    await saveProject(state)
-    markClean()
-  }
+  const handleSave = () => savePendingActions()
 
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {
@@ -164,7 +156,7 @@ function Layout({
   useEffect(() => {
     if (!dirty) return
     const timer = setTimeout(() => {
-      saveProject(state).then(markClean)
+      savePendingActions()
     }, 1000)
     return () => clearTimeout(timer)
   }, [dirty, state])
