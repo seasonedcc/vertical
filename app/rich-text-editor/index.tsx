@@ -10,14 +10,21 @@ type Props = {
   initialContent?: string
   onChange?: (html: string) => void
   className?: string
+  editable?: boolean
 }
 
-function RichTextEditor({ initialContent, onChange, className }: Props) {
+function RichTextEditor({
+  initialContent,
+  onChange,
+  className,
+  editable = true,
+}: Props) {
   const menuContainerRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   const { editor } = useBlockEditor({
     initialContent,
+    editable,
     onUpdate: ({ editor }) => {
       const currentHtml = editor.getHTML()
       onChange?.(currentHtml.replace(/<p><\/p>$/, ''))

@@ -27,7 +27,8 @@
     "test:watch": "vitest",
     "lint": "biome check --error-on-warnings",
     "lint-fix": "biome check --write --error-on-warnings",
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "commander": "^13.1.0",

@@ -44,11 +44,12 @@ function SliceLayer({
   const showLayerCheckmark = isDone && !allLayersDone
 
   const layerPlaceholder = layerIndex === 0 ? 'First' : 'Then'
+  const showsName = totalLayers > 1 || Boolean(layer.name)
 
   return (
     <div ref={ref} className="group relative isolate flex gap-2">
       <div className={cx('flex w-full flex-col', isDone && 'group')}>
-        {expanded && (totalLayers > 1 || isDone) && (
+        {expanded && (showsName || isDone) && (
           <div className="flex items-start gap-1 px-4">
             {isDone ? (
               <button
@@ -61,7 +62,7 @@ function SliceLayer({
             ) : (
               <div className="size-4 shrink-0" />
             )}
-            {totalLayers > 1 ? (
+            {showsName ? (
               <EditableLayer
                 id={layer.id}
                 name={layer.name}
@@ -90,7 +91,7 @@ function SliceLayer({
                 </button>
               )}
               <div className="flex gap-1 font-normal text-base-content/60 text-xs leading-4">
-                {totalLayers > 1 ? (
+                {showsName ? (
                   <EditableLayer
                     id={layer.id}
                     name={layer.name}

@@ -9,7 +9,12 @@ import {
 } from 'react'
 import { cx } from '~/lib/utils'
 import { RichTextEditor } from '~/rich-text-editor'
-import { useBoardDispatch, useBoardState, useIsDirty } from '~/state/context'
+import {
+  useBoardDispatch,
+  useBoardState,
+  useIsDirty,
+  useReadOnly,
+} from '~/state/context'
 import type { Task } from '~/state/types'
 
 type TaskNotesContextValue = {
@@ -53,6 +58,7 @@ function TaskNotesDrawer() {
   const state = useBoardState()
   const dispatch = useBoardDispatch()
   const isDirty = useIsDirty()
+  const readOnly = useReadOnly()
   const dialogRef = useRef<HTMLDivElement>(null)
   const [uiState, setUIState] = useState<'editing' | 'closing'>('editing')
 
@@ -119,6 +125,7 @@ function TaskNotesDrawer() {
               <div className="flex flex-1 flex-col gap-6">
                 <RichTextEditor
                   key={task.id}
+                  editable={!readOnly}
                   initialContent={task.notesHtml ?? ''}
                   onChange={(html) => {
                     dispatch({

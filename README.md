@@ -65,6 +65,7 @@ itsvertical inbox <file>                       # Tasks edited in the browser, no
 itsvertical log <file>                         # The record of changes: when, who, what
 itsvertical log <file> --since <iso-time>      # Only what changed after a moment
 itsvertical open <file> --read-only            # Serve the board for viewing only
+itsvertical new <path> <name> --no-track       # Create a board without recording it in the history
 itsvertical rename <file> <name>                # Rename the project
 ```
 

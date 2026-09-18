@@ -68,30 +68,39 @@ program
   .description('Create a new .vertical project file')
   .argument('<path>', 'File path for the new .vertical file')
   .argument('<name>', 'Project name')
+  .option('--no-track', 'Do not record this board in the board history')
   .option('--json', 'Output as JSON')
-  .action((fileDest: string, name: string, options: JsonOption) => {
-    const filePath = path.resolve(fileDest)
+  .action(
+    (
+      fileDest: string,
+      name: string,
+      options: JsonOption & { track: boolean }
+    ) => {
+      const filePath = path.resolve(fileDest)
 
-    if (fs.existsSync(filePath)) {
-      fail(`File already exists: ${filePath}`, options.json)
+      if (fs.existsSync(filePath)) {
+        fail(`File already exists: ${filePath}`, options.json)
+      }
+
+      if (options.track) {
+        try {
+          recordBoard(name, filePath)
+        } catch (error) {
+          fail((error as Error).message, options.json)
+        }
+      }
+
+      const dir = path.dirname(filePath)
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true })
+      }
+
+      const state = createBlankProject(name)
+      fs.writeFileSync(filePath, serialize(state))
+
+      output(state, options, `Created: ${filePath}`)
     }
-
-    const dir = path.dirname(filePath)
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-    }
-
-    const state = createBlankProject(name)
-    fs.writeFileSync(filePath, serialize(state))
-
-    try {
-      recordBoard(name, filePath)
-    } catch (error) {
-      fail((error as Error).message, options.json)
-    }
-
-    output(state, options, `Created: ${filePath}`)
-  })
+  )
 
 program
   .command('open')
@@ -102,19 +111,25 @@ program
     'Flag tasks edited in the browser so an agent can pick them up'
   )
   .option('--read-only', 'Serve the board for viewing only')
+  .option('--no-track', 'Do not record this board in the board history')
   .action(
-    async (file: string, options: { inbox?: boolean; readOnly?: boolean }) => {
+    async (
+      file: string,
+      options: { inbox?: boolean; readOnly?: boolean; track: boolean }
+    ) => {
       if (options.inbox && options.readOnly) {
         fail('--inbox and --read-only cannot be combined')
       }
       const filePath = resolveFilePath(file)
       const state = loadState(filePath)
-      try {
-        recordBoard(state.project.name, filePath)
-      } catch (error) {
-        console.warn(
-          `Warning: could not track board: ${(error as Error).message}`
-        )
+      if (options.track) {
+        try {
+          recordBoard(state.project.name, filePath)
+        } catch (error) {
+          console.warn(
+            `Warning: could not track board: ${(error as Error).message}`
+          )
+        }
       }
       await startServer(filePath, {
         inbox: options.inbox,

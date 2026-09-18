@@ -111,7 +111,7 @@ function SliceBox(props: SliceBoxProps) {
             )}
           />
         )}
-        {variant === 'desktop' && (
+        {variant === 'desktop' && !readOnly && (
           <DragHandleIcon
             ref={handleRef}
             onClick={(event) => {

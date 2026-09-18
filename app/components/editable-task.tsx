@@ -20,6 +20,16 @@ function TaskMarker({
   isDragging: boolean
   task: Task
 }) {
+  const readOnly = useReadOnly()
+
+  if (readOnly) {
+    return (
+      <div className="flex h-4 w-4 flex-none translate-y-0.5 items-center justify-end">
+        <span className="h-1 w-1 rounded-full bg-base-content/40" />
+      </div>
+    )
+  }
+
   if (variant === 'mobile') {
     return <ToggleDoneButton hideForDragging={isDragging} task={task} />
   }
@@ -56,37 +66,22 @@ function TaskBadges({ task, hidden }: { task: Task; hidden: boolean }) {
   return (
     <div
       className={cx(
-        'flex flex-wrap items-center gap-1 px-1 pb-0.5 text-[10px] leading-[14px]',
+        'flex flex-wrap items-center gap-1 pr-1 pb-0.5 pl-1.5 text-[10px] leading-[14px]',
         hidden && 'invisible'
       )}
     >
       {task.status === 'active' && (
-        <span
-          className={cx(
-            badgeClassName,
-            'bg-cyan-100 text-cyan-900 dark:bg-cyan-900 dark:text-cyan-100'
-          )}
-        >
+        <span className={cx(badgeClassName, 'bg-cyan-100 text-cyan-900')}>
           {task.assignee ? `Working · ${task.assignee}` : 'Working'}
         </span>
       )}
       {task.status === 'failed' && (
-        <span
-          className={cx(
-            badgeClassName,
-            'bg-red-100 text-red-900 dark:bg-red-900 dark:text-red-100'
-          )}
-        >
+        <span className={cx(badgeClassName, 'bg-red-100 text-red-900')}>
           {task.statusReason ? `Failed · ${task.statusReason}` : 'Failed'}
         </span>
       )}
       {task.status === 'blocked' && (
-        <span
-          className={cx(
-            badgeClassName,
-            'bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100'
-          )}
-        >
+        <span className={cx(badgeClassName, 'bg-amber-100 text-amber-900')}>
           {blockedDetail ? `Blocked · ${blockedDetail}` : 'Blocked'}
         </span>
       )}
@@ -115,12 +110,7 @@ function TaskBadges({ task, hidden }: { task: Task; hidden: boolean }) {
         )
       )}
       {task.needsPickup && (
-        <span
-          className={cx(
-            badgeClassName,
-            'bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100'
-          )}
-        >
+        <span className={cx(badgeClassName, 'bg-indigo-100 text-indigo-900')}>
           Waiting for pickup
         </span>
       )}
@@ -307,7 +297,7 @@ function EditableTask({
         isDragging && 'bg-neutral-content/50 pb-1 text-transparent blur-xs'
       )}
     >
-      {variant === 'mobile' && (
+      {variant === 'mobile' && !readOnly && (
         <DragHandleIcon
           ref={handleRef}
           onClick={(event) => {

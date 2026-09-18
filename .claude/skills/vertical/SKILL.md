@@ -230,6 +230,7 @@ When `--json` is passed, errors output as `{"error": "..."}` instead of plain te
 
 ## Anti-Patterns
 
+- **Don't track boards that belong to a repository** — a board committed with a project is opened from many checkouts, and the history allows one path per name. Create and open those with `--no-track`.
 - **Don't hardcode IDs** — always get fresh IDs from `itsvertical show` before operating on entities.
 - **Don't read the whole board after every change** — pass `--json --brief` on mutations and use `show --summary` to check progress; the full `--json` board is for when you need ids.
 - **Don't forget --json for scripting** — the human-readable output format is not stable; use `--json` for reliable parsing.
