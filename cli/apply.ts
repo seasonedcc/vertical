@@ -1,6 +1,12 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { deserialize, deserializeEvents, serialize } from '~/file/format'
+import {
+  deserialize,
+  deserializeEvents,
+  fileVersion,
+  serialize,
+} from '~/file/format'
+import { CURRENT_VERSION } from '~/file/migrations'
 import type { BoardAction } from '~/state/actions'
 import { boardReducer } from '~/state/reducer'
 import type { BoardState } from '~/state/types'
@@ -85,9 +91,19 @@ function updateState(
     const before = deserialize(content)
     const after = update(before)
     const at = new Date().toISOString()
+    const previousVersion = fileVersion(content)
+    const migrated =
+      previousVersion < CURRENT_VERSION
+        ? [
+            {
+              summary: `Migrated the file from version ${previousVersion} to ${CURRENT_VERSION}`,
+              taskId: null,
+            },
+          ]
+        : []
     const events = [
       ...deserializeEvents(content),
-      ...record(before, after).map((draft) => ({
+      ...[...migrated, ...record(before, after)].map((draft) => ({
         id: crypto.randomUUID(),
         at,
         actor,

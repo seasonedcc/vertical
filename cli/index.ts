@@ -3,7 +3,8 @@ import path from 'node:path'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Command } from 'commander'
-import { serialize } from '~/file/format'
+import { fileVersion, serialize } from '~/file/format'
+import { CURRENT_VERSION } from '~/file/migrations'
 import { createBlankProject } from '~/state/initial-state'
 import type { TaskStatus } from '~/state/types'
 import {
@@ -252,6 +253,51 @@ program
     } catch (error) {
       fail((error as Error).message, options.json)
     }
+  })
+
+program
+  .command('migrate')
+  .description('Upgrade a .vertical file to the current file version')
+  .argument('<file>', 'Path to the .vertical file')
+  .option('--check', 'Only report whether the file needs migrating')
+  .option('--json', 'Output as JSON')
+  .action((file: string, options: JsonOption & { check?: boolean }) => {
+    const filePath = resolveFilePath(file, options.json)
+    let version = CURRENT_VERSION
+    try {
+      const content = fs.readFileSync(filePath, 'utf-8')
+      version = fileVersion(content)
+      loadState(filePath)
+    } catch (error) {
+      fail((error as Error).message, options.json)
+    }
+    const needsMigration = version < CURRENT_VERSION
+
+    if (options.check || !needsMigration) {
+      const message = needsMigration
+        ? `Needs migrating: version ${version}, current is ${CURRENT_VERSION}`
+        : `Up to date: version ${version}`
+      console.log(
+        options.json
+          ? JSON.stringify({
+              version,
+              current: CURRENT_VERSION,
+              needsMigration,
+            })
+          : message
+      )
+      if (options.check && needsMigration) process.exit(1)
+      return
+    }
+
+    const backupPath = `${filePath}.v${version}.backup`
+    fs.copyFileSync(filePath, backupPath)
+    const state = updateState(filePath, (current) => current)
+    output(
+      state,
+      options,
+      `Migrated from version ${version} to ${CURRENT_VERSION}. The original is at ${backupPath}`
+    )
   })
 
 program

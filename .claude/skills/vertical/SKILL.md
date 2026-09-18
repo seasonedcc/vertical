@@ -61,6 +61,8 @@ itsvertical show <file> --visual                 # Show visual 3x3 grid with sum
 itsvertical show <file> --summary                # Counts per box and layer in a few lines
 itsvertical apply <file> <plan.json>             # Fill empty boxes from a plan in one call
 itsvertical validate <file>                      # Check statuses and blockers, exit 1 on problems
+itsvertical migrate <file> --check               # Does this file need upgrading to the current version?
+itsvertical migrate <file>                       # Upgrade it, keeping a .v<n>.backup copy
 itsvertical inbox <file>                         # Tasks edited in the browser, not yet acknowledged
 itsvertical log <file> --since <iso-time> --json  # What changed after a moment, with actor and time
 itsvertical rename <file> <name>                 # Rename the project

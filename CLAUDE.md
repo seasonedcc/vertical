@@ -130,6 +130,12 @@ The CLI is designed for AI agents as the primary user:
 - **Layers**: `{ id, sliceId, name, sorting, status }` — steps within a box (can be split/merged)
 - **Tasks**: `{ id, projectId, layerId, name, sorting, done, notesHtml, status, statusReason, assignee, blockedBy, links, needsPickup }` — work items within a layer. `notesHtml` is rich text (HTML string or null). `status` is `active`, `failed`, `blocked` or null, and is separate from `done`: marking a task done clears its status and releases the tasks it blocked. `links` are `{ label, target }` pairs. `needsPickup` marks a task edited in the browser under `open --inbox`. Files written before these fields existed load with the defaults.
 
+## File versions
+
+The file carries a `version`. `app/file/migrations.ts` holds `CURRENT_VERSION` and one function per older version that upgrades a raw file by one step; `deserialize` runs the chain in memory on every read, and the CLI and the web app both go through it. Reads never write. The first write saves the file at the current version and records the migration as an event, and `itsvertical migrate` does that on its own, keeping a `.v<n>.backup` copy.
+
+Any change to the shape of the file needs a new version and a migration with a test, including a test against the version 1 files in this repository (`sample.vertical`, `roadmap.vertical`). A file from a newer version is refused with a pointer to `itsvertical update`.
+
 ## Definition of Done
 
 - A task is not done unless `pnpm run test`, `pnpm run lint`, `pnpm run tsc`, and `pnpm run build` all pass.

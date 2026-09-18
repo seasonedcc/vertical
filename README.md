@@ -61,6 +61,8 @@ itsvertical show <file> --visual               # Show the board as a visual 3x3 
 itsvertical show <file> --summary              # Counts per box and layer in a few lines
 itsvertical apply <file> <plan.json>           # Fill empty boxes from a plan in one call
 itsvertical validate <file>                    # Check statuses and blockers, exit 1 on problems
+itsvertical migrate <file>                     # Upgrade an older file to the current file version
+itsvertical migrate <file> --check             # Only say whether it needs it (exit 1 if so)
 itsvertical inbox <file>                       # Tasks edited in the browser, not yet acknowledged
 itsvertical log <file>                         # The record of changes: when, who, what
 itsvertical log <file> --since <iso-time>      # Only what changed after a moment
@@ -188,13 +190,20 @@ It's just JSON. You can version it with git, share it with teammates, or back it
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "project": { "name": "My Project" },
   "slices": [],
   "layers": [],
-  "tasks": []
+  "tasks": [],
+  "events": []
 }
 ```
+
+### File versions
+
+Files from older releases keep working. Vertical reads a version 1 file as it is, and nothing is written until you change something: the first change saves the file as version 2 and notes the migration in its log. `itsvertical migrate <file>` does the same upgrade on its own and leaves the original beside it as `<file>.v1.backup`.
+
+An older Vertical refuses a version 2 file instead of opening it and dropping what it does not know, so update everyone who shares a board: `itsvertical update`.
 
 ## Development
 
