@@ -17,7 +17,9 @@ The SPA uses `useReducer` + React Context. All mutations are synchronous dispatc
 
 The browser UI communicates with the CLI server via two endpoints:
 - `GET /api/project` — load the `.vertical` file
-- `POST /api/actions` — apply a list of reducer actions to the file under a lock and return the new state. The browser never posts the whole board, so its saves merge with changes the CLI made in the meantime. With `open --inbox`, tasks those actions edited are flagged `needsPickup`.
+- `POST /api/actions` — apply a list of reducer actions to the file under a lock and return the new state. The browser never posts the whole board, so its saves merge with changes the CLI made in the meantime. With `open --inbox`, tasks those actions edited are flagged `needsPickup`. With `open --read-only` it answers 403.
+- `GET /api/mode` — `{ readOnly, inbox }`, read once by the web app on load
+- `GET /api/log` — the file's events, for the Activity drawer
 
 ### CLI structure
 
@@ -30,8 +32,9 @@ The browser UI communicates with the CLI server via two endpoints:
 - `cli/plan.ts` — parses a plan file and fills empty boxes for `apply`
 - `cli/validate.ts` — consistency checks for statuses and blockers
 - `cli/inbox.ts` — flags tasks edited in the browser and lists them
+- `cli/events.ts` — turns a reducer action into the log entries it caused
 
-All CLI commands follow the same pattern: read file → deserialize → apply reducer action → serialize → write file. The `applyAction` helper in `cli/apply.ts` encapsulates this. Every write goes through `updateState`, which takes a `<file>.lock` lock and replaces the file with an atomic rename, so the CLI and the server can write concurrently.
+All CLI commands follow the same pattern: read file → deserialize → apply reducer action → serialize → write file. The `applyAction` helper in `cli/apply.ts` encapsulates this. Every write goes through `updateState`, which takes a `<file>.lock` lock and replaces the file with an atomic rename, so the CLI and the server can write concurrently. `updateState` also appends the change's events to the file's `events` array, stamped with the time and the actor (`--actor`, `VERTICAL_ACTOR`, or `cli`; the server records `browser`). Events live in the file but never in `BoardState`, so `show --json` stays the size of the board.
 
 ### Board history
 

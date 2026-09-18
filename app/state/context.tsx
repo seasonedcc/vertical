@@ -16,27 +16,34 @@ type BoardContextValue = {
   dispatch: (action: BoardAction) => void
   isDirty: () => boolean
   savePendingActions: () => Promise<void>
+  readOnly: boolean
 }
 
 const BoardContext = createContext<BoardContextValue | undefined>(undefined)
 
 function BoardProvider({
   initialState,
+  readOnly,
   children,
 }: {
   initialState: BoardState
+  readOnly: boolean
   children: React.ReactNode
 }) {
   const [state, rawDispatch] = useReducer(boardReducer, initialState)
   const pendingActionsRef = useRef<BoardAction[]>([])
   const [pendingCount, setPendingCount] = useState(0)
 
-  const dispatch = useCallback((action: BoardAction) => {
-    rawDispatch(action)
-    if (action.type === 'LOAD_STATE') return
-    pendingActionsRef.current = [...pendingActionsRef.current, action]
-    setPendingCount(pendingActionsRef.current.length)
-  }, [])
+  const dispatch = useCallback(
+    (action: BoardAction) => {
+      if (readOnly && action.type !== 'LOAD_STATE') return
+      rawDispatch(action)
+      if (action.type === 'LOAD_STATE') return
+      pendingActionsRef.current = [...pendingActionsRef.current, action]
+      setPendingCount(pendingActionsRef.current.length)
+    },
+    [readOnly]
+  )
 
   const isDirty = useCallback(() => pendingCount > 0, [pendingCount])
 
@@ -61,7 +68,7 @@ function BoardProvider({
 
   return (
     <BoardContext.Provider
-      value={{ state, dispatch, isDirty, savePendingActions }}
+      value={{ state, dispatch, isDirty, savePendingActions, readOnly }}
     >
       {children}
     </BoardContext.Provider>
@@ -88,6 +95,12 @@ function useIsDirty() {
   return context.isDirty
 }
 
+function useReadOnly() {
+  const context = useContext(BoardContext)
+  if (!context) throw new Error('useReadOnly must be used within BoardProvider')
+  return context.readOnly
+}
+
 function useSavePendingActions() {
   const context = useContext(BoardContext)
   if (!context)
@@ -100,5 +113,6 @@ export {
   useBoardDispatch,
   useBoardState,
   useIsDirty,
+  useReadOnly,
   useSavePendingActions,
 }

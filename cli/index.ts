@@ -9,9 +9,11 @@ import type { TaskStatus } from '~/state/types'
 import {
   applyAction,
   fail,
+  loadEvents,
   loadState,
   output,
   resolveFilePath,
+  setActor,
   updateState,
 } from './apply.js'
 import { showBoardGrid, showSummaryTable } from './board.js'
@@ -93,18 +95,27 @@ program
     '--inbox',
     'Flag tasks edited in the browser so an agent can pick them up'
   )
-  .action(async (file: string, options: { inbox?: boolean }) => {
-    const filePath = resolveFilePath(file)
-    const state = loadState(filePath)
-    try {
-      recordBoard(state.project.name, filePath)
-    } catch (error) {
-      console.warn(
-        `Warning: could not track board: ${(error as Error).message}`
-      )
+  .option('--read-only', 'Serve the board for viewing only')
+  .action(
+    async (file: string, options: { inbox?: boolean; readOnly?: boolean }) => {
+      if (options.inbox && options.readOnly) {
+        fail('--inbox and --read-only cannot be combined')
+      }
+      const filePath = resolveFilePath(file)
+      const state = loadState(filePath)
+      try {
+        recordBoard(state.project.name, filePath)
+      } catch (error) {
+        console.warn(
+          `Warning: could not track board: ${(error as Error).message}`
+        )
+      }
+      await startServer(filePath, {
+        inbox: options.inbox,
+        readOnly: options.readOnly,
+      })
     }
-    await startServer(filePath, { inbox: options.inbox })
-  })
+  )
 
 program
   .command('dev')
@@ -114,14 +125,21 @@ program
     '--inbox',
     'Flag tasks edited in the browser so an agent can pick them up'
   )
-  .action(async (file: string, options: { inbox?: boolean }) => {
-    const filePath = resolveFilePath(file)
-    await startServer(filePath, {
-      port: 3456,
-      open: false,
-      inbox: options.inbox,
-    })
-  })
+  .option('--read-only', 'Serve the board for viewing only')
+  .action(
+    async (file: string, options: { inbox?: boolean; readOnly?: boolean }) => {
+      if (options.inbox && options.readOnly) {
+        fail('--inbox and --read-only cannot be combined')
+      }
+      const filePath = resolveFilePath(file)
+      await startServer(filePath, {
+        port: 3456,
+        open: false,
+        inbox: options.inbox,
+        readOnly: options.readOnly,
+      })
+    }
+  )
 
 program
   .command('show')
@@ -190,11 +208,20 @@ program
     try {
       const plan = parsePlan(fs.readFileSync(planPath, 'utf-8'))
       let created: ReturnType<typeof applyPlan>['created'] = []
-      const state = updateState(filePath, (current) => {
-        const result = applyPlan(current, plan, () => crypto.randomUUID())
-        created = result.created
-        return result.state
-      })
+      const state = updateState(
+        filePath,
+        (current) => {
+          const result = applyPlan(current, plan, () => crypto.randomUUID())
+          created = result.created
+          return result.state
+        },
+        () => [
+          {
+            summary: `Applied a plan: ${created.length} tasks in ${plan.boxes.length} box${plan.boxes.length === 1 ? '' : 'es'}`,
+            taskId: null,
+          },
+        ]
+      )
 
       if (options.json && options.brief) {
         console.log(JSON.stringify({ ok: true, created }))
@@ -225,6 +252,41 @@ program
 
     if (problems.length > 0) process.exit(1)
   })
+
+program
+  .command('log')
+  .description('Print the record of changes made to the board')
+  .argument('<file>', 'Path to the .vertical file')
+  .option('--limit <count>', 'How many of the latest events to print', '30')
+  .option('--since <iso-time>', 'Only events after this time')
+  .option('--json', 'Output as JSON')
+  .action(
+    (file: string, options: JsonOption & { limit: string; since?: string }) => {
+      const filePath = resolveFilePath(file, options.json)
+      const limit = Number(options.limit)
+      if (!Number.isInteger(limit) || limit < 1) {
+        fail(`Invalid limit: ${options.limit}`, options.json)
+      }
+      const since = options.since ? Date.parse(options.since) : null
+      if (since !== null && Number.isNaN(since)) {
+        fail(`Invalid time: ${options.since}`, options.json)
+      }
+
+      const events = loadEvents(filePath)
+        .filter((event) => since === null || Date.parse(event.at) > since)
+        .slice(-limit)
+
+      if (options.json) {
+        console.log(JSON.stringify(events, null, 2))
+      } else if (events.length === 0) {
+        console.log('No events')
+      } else {
+        for (const event of events) {
+          console.log(`${event.at} ${event.actor}: ${event.summary}`)
+        }
+      }
+    }
+  )
 
 program
   .command('inbox')
@@ -907,19 +969,27 @@ program
     if (!success) process.exit(1)
   })
 
-function addBriefOption(command: Command) {
+function addSharedOptions(command: Command) {
   for (const subcommand of command.commands) {
     if (subcommand.options.some((o) => o.long === '--json')) {
       subcommand.option(
         '--brief',
         'With --json, output only { ok, id } instead of the whole board'
       )
+      subcommand.option(
+        '--actor <name>',
+        'Who is making this change, recorded in the log'
+      )
     }
-    addBriefOption(subcommand)
+    addSharedOptions(subcommand)
   }
 }
 
-addBriefOption(program)
+addSharedOptions(program)
+
+program.hook('preAction', (_program, actionCommand) => {
+  setActor(actionCommand.opts().actor)
+})
 
 if (process.argv.length === 2) {
   program.outputHelp()

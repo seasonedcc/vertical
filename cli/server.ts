@@ -8,7 +8,8 @@ import open from 'open'
 import { serialize } from '~/file/format'
 import type { BoardAction } from '~/state/actions'
 import { boardReducer } from '~/state/reducer'
-import { updateState } from './apply.js'
+import { loadEvents, updateState } from './apply.js'
+import { describeAction } from './events.js'
 import { flagBrowserEdits } from './inbox.js'
 
 const MIME_TYPES: Record<string, string> = {
@@ -78,7 +79,12 @@ function confirm(question: string): Promise<boolean> {
   })
 }
 
-type ServerOptions = { port?: number; open?: boolean; inbox?: boolean }
+type ServerOptions = {
+  port?: number
+  open?: boolean
+  inbox?: boolean
+  readOnly?: boolean
+}
 
 async function startServer(filePath: string, options: ServerOptions = {}) {
   const absoluteFilePath = path.resolve(filePath)
@@ -102,15 +108,50 @@ async function startServer(filePath: string, options: ServerOptions = {}) {
       return
     }
 
+    if (url === '/api/mode' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(
+        JSON.stringify({
+          readOnly: Boolean(options.readOnly),
+          inbox: Boolean(options.inbox),
+        })
+      )
+      return
+    }
+
     if (url === '/api/actions' && req.method === 'POST') {
+      if (options.readOnly) {
+        res.writeHead(403, { 'Content-Type': 'application/json' })
+        res.end('{"error":"This board is open read-only"}')
+        return
+      }
       const body = await readRequestBody(req)
       const { actions } = JSON.parse(body) as { actions: BoardAction[] }
-      const state = updateState(absoluteFilePath, (current) => {
-        const next = actions.reduce(boardReducer, current)
-        return options.inbox ? flagBrowserEdits(next, actions) : next
-      })
+      const state = updateState(
+        absoluteFilePath,
+        (current) => {
+          const next = actions.reduce(boardReducer, current)
+          return options.inbox ? flagBrowserEdits(next, actions) : next
+        },
+        (before) => {
+          let current = before
+          return actions.flatMap((action) => {
+            const next = boardReducer(current, action)
+            const events = describeAction(current, next, action)
+            current = next
+            return events
+          })
+        },
+        'browser'
+      )
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(serialize(state))
+      return
+    }
+
+    if (url === '/api/log' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify(loadEvents(absoluteFilePath)))
       return
     }
 

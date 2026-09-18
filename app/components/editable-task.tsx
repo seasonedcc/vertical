@@ -3,7 +3,7 @@ import { StickyNoteIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { cx, usePlaceCursorOnClickedPosition } from '~/lib/utils'
-import { useBoardDispatch, useBoardState } from '~/state/context'
+import { useBoardDispatch, useBoardState, useReadOnly } from '~/state/context'
 import type { Task } from '~/state/types'
 import { DragHandleIcon } from './drag-handle-icon'
 import type { OverTaskData } from './drag-helpers'
@@ -142,6 +142,7 @@ function EditableTask({
   variant: 'desktop' | 'mobile'
 }) {
   const dispatch = useBoardDispatch()
+  const readOnly = useReadOnly()
   const { openNotes } = useTaskNotes()
   const [editing, setEditing] = useState(false)
   const [height, setHeight] = useState(16)
@@ -165,6 +166,7 @@ function EditableTask({
   const { ref, handleRef, isDragging } = useSortable({
     id: `task:${task.id}`,
     index,
+    disabled: readOnly,
     data: {
       elementType: 'sortableTask',
       task,
@@ -343,6 +345,11 @@ function EditableTask({
           }}
           onClick={(event) => {
             if (projectMode === 'split') return
+            if (readOnly) {
+              event.stopPropagation()
+              openNotes(task.id)
+              return
+            }
 
             event.stopPropagation()
             const buttonHeight = wrapperRef.current?.offsetHeight ?? 16

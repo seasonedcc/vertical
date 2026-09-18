@@ -7,8 +7,10 @@ import {
   useBoardDispatch,
   useBoardState,
   useIsDirty,
+  useReadOnly,
   useSavePendingActions,
 } from '~/state/context'
+import { ActivityDrawer } from './activity-drawer'
 import { useProjectMode } from './project-mode'
 
 function EditableProjectName({
@@ -17,6 +19,7 @@ function EditableProjectName({
   name: string
 }) {
   const dispatch = useBoardDispatch()
+  const readOnly = useReadOnly()
   const [editing, setEditing] = useState(false)
   const [height, setHeight] = useState(18)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -98,6 +101,7 @@ function EditableProjectName({
       type="button"
       ref={buttonRef}
       onClick={(event) => {
+        if (readOnly) return
         const buttonHeight = buttonRef.current?.offsetHeight ?? 18
 
         handleClick(event)
@@ -128,6 +132,8 @@ function Layout({
   const dispatch = useBoardDispatch()
   const isDirty = useIsDirty()
   const savePendingActions = useSavePendingActions()
+  const readOnly = useReadOnly()
+  const [activityOpen, setActivityOpen] = useState(false)
   const { projectMode, setProjectMode } = useProjectMode()
   const [disconnected, setDisconnected] = useState(false)
   const dirtyRef = useRef(false)
@@ -225,22 +231,40 @@ function Layout({
         >
           ● Saving...
         </span>
+        {readOnly && (
+          <span className="rounded bg-neutral px-2 py-0.5 text-neutral-content text-xs">
+            Read-only
+          </span>
+        )}
         <ul className="menu menu-horizontal ml-auto shrink-0 flex-nowrap gap-1 px-1">
           <li>
             <button
-              className={cx(
-                'btn btn-neutral btn-sm hidden sm:inline-flex',
-                projectMode === 'split' && 'ring-2 ring-accent'
-              )}
-              onClick={() =>
-                setProjectMode(projectMode === 'split' ? 'default' : 'split')
-              }
+              className="btn btn-neutral btn-sm"
+              onClick={() => setActivityOpen(true)}
             >
-              <span className="text-2xl">✂</span>
+              Activity
             </button>
           </li>
+          {!readOnly && (
+            <li>
+              <button
+                className={cx(
+                  'btn btn-neutral btn-sm hidden sm:inline-flex',
+                  projectMode === 'split' && 'ring-2 ring-accent'
+                )}
+                onClick={() =>
+                  setProjectMode(projectMode === 'split' ? 'default' : 'split')
+                }
+              >
+                <span className="text-2xl">✂</span>
+              </button>
+            </li>
+          )}
         </ul>
       </div>
+      {activityOpen && (
+        <ActivityDrawer onClose={() => setActivityOpen(false)} />
+      )}
       {children}
     </div>
   )

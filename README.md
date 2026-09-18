@@ -62,6 +62,9 @@ itsvertical show <file> --summary              # Counts per box and layer in a f
 itsvertical apply <file> <plan.json>           # Fill empty boxes from a plan in one call
 itsvertical validate <file>                    # Check statuses and blockers, exit 1 on problems
 itsvertical inbox <file>                       # Tasks edited in the browser, not yet acknowledged
+itsvertical log <file>                         # The record of changes: when, who, what
+itsvertical log <file> --since <iso-time>      # Only what changed after a moment
+itsvertical open <file> --read-only            # Serve the board for viewing only
 itsvertical rename <file> <name>                # Rename the project
 ```
 
@@ -142,6 +145,10 @@ A task's `key` only lives in the plan: `blockedBy` refers to it, and the output 
 Add `--brief` to `--json` on any command that changes the board and it prints `{ "ok": true, "id": "..." }` instead of the whole board.
 
 The CLI and the browser can write to the same file at the same time. Every write takes a lock and replaces the file atomically, and the browser sends the changes you made, not the whole board, so neither side overwrites the other.
+
+Every change is recorded in the file with its time and its actor. The CLI records `cli` unless you pass `--actor <name>` or set `VERTICAL_ACTOR`, and the browser records `browser`. Read the record with `itsvertical log <file>`, or from the Activity button in the browser.
+
+Open the board with `itsvertical open <file> --read-only` to watch without being able to change anything: the editing controls are off and the server refuses writes.
 
 Open the board with `itsvertical open <file> --inbox` and every task you add or edit in the browser is flagged. The agent reads the flagged tasks with `itsvertical inbox <file>` and clears each one with `itsvertical task ack`.
 

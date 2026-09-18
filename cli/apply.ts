@@ -1,9 +1,10 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { deserialize, serialize } from '~/file/format'
+import { deserialize, deserializeEvents, serialize } from '~/file/format'
 import type { BoardAction } from '~/state/actions'
 import { boardReducer } from '~/state/reducer'
 import type { BoardState } from '~/state/types'
+import { type EventDraft, describeAction } from './events.js'
 import { showBoardJson } from './show.js'
 
 function resolveFilePath(file: string, json?: boolean) {
@@ -67,19 +68,47 @@ function saveState(filePath: string, state: BoardState): void {
   writeFileAtomic(filePath, serialize(state))
 }
 
+let currentActor = process.env.VERTICAL_ACTOR || 'cli'
+
+function setActor(actor: string | undefined) {
+  if (actor) currentActor = actor
+}
+
 function updateState(
   filePath: string,
-  update: (state: BoardState) => BoardState
+  update: (state: BoardState) => BoardState,
+  record: (before: BoardState, after: BoardState) => EventDraft[] = () => [],
+  actor = currentActor
 ) {
   return withFileLock(filePath, () => {
-    const newState = update(loadState(filePath))
-    saveState(filePath, newState)
-    return newState
+    const content = fs.readFileSync(filePath, 'utf-8')
+    const before = deserialize(content)
+    const after = update(before)
+    const at = new Date().toISOString()
+    const events = [
+      ...deserializeEvents(content),
+      ...record(before, after).map((draft) => ({
+        id: crypto.randomUUID(),
+        at,
+        actor,
+        ...draft,
+      })),
+    ]
+    writeFileAtomic(filePath, serialize(after, events))
+    return after
   })
 }
 
 function applyAction(filePath: string, action: BoardAction): BoardState {
-  return updateState(filePath, (state) => boardReducer(state, action))
+  return updateState(
+    filePath,
+    (state) => boardReducer(state, action),
+    (before, after) => describeAction(before, after, action)
+  )
+}
+
+function loadEvents(filePath: string) {
+  return deserializeEvents(fs.readFileSync(filePath, 'utf-8'))
 }
 
 type OutputOptions = { json?: boolean; brief?: boolean }
@@ -113,10 +142,12 @@ function fail(message: string, json?: boolean): never {
 export {
   applyAction,
   fail,
+  loadEvents,
   loadState,
   output,
   resolveFilePath,
   saveState,
+  setActor,
   updateState,
   withFileLock,
   writeFileAtomic,

@@ -41,6 +41,14 @@ type Task = {
   needsPickup: boolean
 }
 
+type BoardEvent = {
+  id: string
+  at: string
+  actor: string
+  summary: string
+  taskId: string | null
+}
+
 type BoardState = {
   project: Project
   slices: Slice[]
@@ -48,4 +56,13 @@ type BoardState = {
   tasks: Task[]
 }
 
-export type { BoardState, Layer, Project, Slice, Task, TaskLink, TaskStatus }
+export type {
+  BoardEvent,
+  BoardState,
+  Layer,
+  Project,
+  Slice,
+  Task,
+  TaskLink,
+  TaskStatus,
+}

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { cx } from '~/lib/utils'
-import { useBoardDispatch } from '~/state/context'
+import { useBoardDispatch, useReadOnly } from '~/state/context'
 import type { Layer, Task } from '~/state/types'
 import { DragHandleIcon } from './drag-handle-icon'
 import { getNextSorting } from './drag-helpers'
@@ -16,11 +16,14 @@ function AddTaskForm({
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useBoardDispatch()
+  const readOnly = useReadOnly()
 
   const nextSorting = getNextSorting(tasks)
 
   const opacityClasses =
     'opacity-[var(--idle-opacity)] group-hover:opacity-[var(--hover-opacity)]'
+
+  if (readOnly) return null
 
   return (
     <div className="flex gap-1">

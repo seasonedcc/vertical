@@ -1,7 +1,7 @@
 import * as Select from '@radix-ui/react-select'
 import { MoreHorizontal } from 'lucide-react'
 import { cx } from '~/lib/utils'
-import { useBoardDispatch } from '~/state/context'
+import { useBoardDispatch, useReadOnly } from '~/state/context'
 import type { Layer } from '~/state/types'
 
 const layerStatuses = ['done'] as const
@@ -14,11 +14,14 @@ function StatusSelect({
   className?: string
 }) {
   const dispatch = useBoardDispatch()
+  const readOnly = useReadOnly()
 
   function onChange(value: string) {
     const status = value === '—' ? null : (value as 'done' | null)
     dispatch({ type: 'SET_LAYER_STATUS', layerId: layer.id, status })
   }
+
+  if (readOnly) return null
 
   return (
     <Select.Root value={layer.status || '-'} onValueChange={onChange}>

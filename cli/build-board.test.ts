@@ -3,9 +3,12 @@ import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { serialize } from '~/file/format'
+import type { BoardAction } from '~/state/actions'
 import { createBlankProject } from '~/state/initial-state'
+import { boardReducer } from '~/state/reducer'
 import type { BoardState, Task } from '~/state/types'
-import { applyAction, loadState, withFileLock } from './apply'
+import { applyAction, loadEvents, loadState, withFileLock } from './apply'
+import { describeAction } from './events'
 import { flagBrowserEdits, listInbox } from './inbox'
 import { applyPlan, parsePlan } from './plan'
 import { summarizeBoard } from './summary'
@@ -241,5 +244,97 @@ describe('file writes', () => {
     fs.utimesSync(lockPath, old, old)
     applyAction(filePath, { type: 'RENAME_PROJECT', name: 'Renamed' })
     expect(loadState(filePath).project.name).toBe('Renamed')
+  })
+})
+
+describe('event log', () => {
+  let directory: string
+  let filePath: string
+
+  beforeEach(() => {
+    directory = fs.mkdtempSync(path.join(os.tmpdir(), 'vertical-'))
+    filePath = path.join(directory, 'board.vertical')
+    fs.writeFileSync(filePath, serialize(createBlankProject('Test')))
+  })
+
+  afterEach(() => {
+    fs.rmSync(directory, { recursive: true, force: true })
+  })
+
+  it('appends one event per change and keeps earlier ones', () => {
+    const layerId = loadState(filePath).layers[0].id
+    applyAction(filePath, {
+      type: 'CREATE_TASK',
+      id: 'task-1',
+      layerId,
+      name: 'Query',
+      sorting: 1,
+    })
+    applyAction(filePath, {
+      type: 'SET_TASK_DONE',
+      taskId: 'task-1',
+      done: true,
+    })
+
+    const events = loadEvents(filePath)
+    expect(events.map((event) => event.summary)).toEqual([
+      'Added "Query" to Box 1',
+      'Marked "Query" done',
+    ])
+    expect(events[0]).toMatchObject({ actor: 'cli', taskId: 'task-1' })
+  })
+
+  it('records nothing when the change is a no-op', () => {
+    applyAction(filePath, { type: 'SET_TASK_DONE', taskId: 'gone', done: true })
+    expect(loadEvents(filePath)).toEqual([])
+  })
+
+  it('keeps events out of the board state', () => {
+    applyAction(filePath, { type: 'RENAME_PROJECT', name: 'Renamed' })
+    expect(Object.keys(loadState(filePath))).toEqual([
+      'project',
+      'slices',
+      'layers',
+      'tasks',
+    ])
+  })
+})
+
+describe('describeAction', () => {
+  it('reports tasks released when their blocker is done', () => {
+    const before = withTask(
+      withTask(createBlankProject('Test'), { id: 'task-a', name: 'Spec' }),
+      {
+        id: 'task-b',
+        name: 'Walkthrough',
+        status: 'blocked',
+        blockedBy: ['task-a'],
+      }
+    )
+    const action = {
+      type: 'SET_TASK_DONE',
+      taskId: 'task-a',
+      done: true,
+    } as const
+    const after = boardReducer(before, action)
+    expect(
+      describeAction(before, after, action).map((event) => event.summary)
+    ).toEqual(['Marked "Spec" done', 'Unblocked "Walkthrough"'])
+  })
+
+  it('describes a failure with its reason', () => {
+    const before = withTask(createBlankProject('Test'), { name: 'Review' })
+    const action: BoardAction = {
+      type: 'SET_TASK_STATUS',
+      taskId: 'task-1',
+      status: 'failed',
+      reason: 'gates red',
+      assignee: null,
+      blockedBy: [],
+    }
+    const after = boardReducer(before, action)
+    expect(describeAction(before, after, action)[0].summary).toBe(
+      '"Review" failed: gates red'
+    )
   })
 })

@@ -62,6 +62,7 @@ itsvertical show <file> --summary                # Counts per box and layer in a
 itsvertical apply <file> <plan.json>             # Fill empty boxes from a plan in one call
 itsvertical validate <file>                      # Check statuses and blockers, exit 1 on problems
 itsvertical inbox <file>                         # Tasks edited in the browser, not yet acknowledged
+itsvertical log <file> --since <iso-time> --json  # What changed after a moment, with actor and time
 itsvertical rename <file> <name>                 # Rename the project
 itsvertical open <file>                          # Open in browser UI
 ```
@@ -205,6 +206,15 @@ itsvertical task done project.vertical <task-id>   # clears the status, unblocks
 itsvertical show project.vertical --summary         # the cheap way to read progress
 ```
 
+### Say who you are
+
+Every change is recorded with an actor. Pass `--actor <name>` on a mutation, or set `VERTICAL_ACTOR` once for the session, so the log tells agents and people apart.
+
+```bash
+VERTICAL_ACTOR=orchestrator itsvertical task done project.vertical <task-id>
+itsvertical log project.vertical --limit 10
+```
+
 ### Pick up what a person changed in the browser
 
 When the board was opened with `itsvertical open <file> --inbox`, tasks the person adds or edits are flagged.
@@ -223,4 +233,5 @@ When `--json` is passed, errors output as `{"error": "..."}` instead of plain te
 - **Don't hardcode IDs** — always get fresh IDs from `itsvertical show` before operating on entities.
 - **Don't read the whole board after every change** — pass `--json --brief` on mutations and use `show --summary` to check progress; the full `--json` board is for when you need ids.
 - **Don't forget --json for scripting** — the human-readable output format is not stable; use `--json` for reliable parsing.
+- **Don't suggest `open` without `--read-only` while an agent owns the board** — a person watching a build should not be able to tick tasks; use `--inbox` when they should be able to add requests.
 - **Don't use `open` (or the `itsvertical <file>` shorthand) in automated workflows** — it starts a browser server meant for human interaction. Use the other commands for agent work.

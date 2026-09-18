@@ -2,6 +2,7 @@ import { closestCenter } from '@dnd-kit/collision'
 import { useDraggable, useDroppable } from '@dnd-kit/react'
 import type { CSSProperties } from 'react'
 import { cx } from '~/lib/utils'
+import { useReadOnly } from '~/state/context'
 import type { Layer, Slice, Task } from '~/state/types'
 import { DragHandleIcon } from './drag-handle-icon'
 import type { ActiveSliceData, OverSliceData } from './drag-helpers'
@@ -27,12 +28,14 @@ type SliceBoxProps = {
 
 function SliceBox(props: SliceBoxProps) {
   const { slice, layers, tasks, variant } = props
+  const readOnly = useReadOnly()
   const {
     ref: draggableRef,
     handleRef,
     isDragging,
   } = useDraggable({
     id: `draggable-slice:${slice.id}`,
+    disabled: readOnly,
     data: { elementType: 'draggableSlice', slice } satisfies ActiveSliceData,
   })
 
